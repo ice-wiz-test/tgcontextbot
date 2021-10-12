@@ -1,8 +1,11 @@
 package startup
-import  (
+
+import (
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 	"os"
+	handle "tgcontextbot/internal/handling"
 )
 
 func InitializeBot() (error, *tgbotapi.BotAPI) {
@@ -22,15 +25,30 @@ func InitializeBot() (error, *tgbotapi.BotAPI) {
 
 }
 
+
+
 func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	msg := tgbotapi.NewMessage(newUpd.Message.Chat.ID, "")
 	switch newUpd.Message.Command() {
 	case "start":
 		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота"
+	case "addchat":
+		fmt.Println(newUpd.Message.Text)
+		var ErrorWithHandlingNewChat error = nil
+		ErrorWithHandlingNewChat = handle.BotNewChatHandle(newUpd, bot)
+
+		if ErrorWithHandlingNewChat != nil {
+			return ErrorWithHandlingNewChat
+		}
+
+		return nil
+
 	default:
 		msg.Text = "Я не знаю такой команды, простите"
 	}
-
+	if msg.Text == "" {
+		msg.Text = "Временный костыль для тестирования"
+	}
 	_, err := bot.Send(msg)
 
 	if err != nil {
