@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	err, _ :=  start.InitializeBot()
+	err, bot :=  start.InitializeBot()
 
 	if err != nil  {
 		fmt.Println("Unable to start up, terminating.")
@@ -13,6 +13,7 @@ func main() {
 	}
 
 	fmt.Println("Started up")
-	return
+
+	start.ServeBot(bot)
 
 }
