@@ -58,20 +58,34 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 func ServeBot(bot *tgbotapi.BotAPI) {
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
+
+
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
 	updates := bot.GetUpdatesChan(u)
 	for update := range updates {
 
-		if update.Message.IsCommand() {
-			err := BotCommandHandle(update, bot)
+		fmt.Println("BREAKPOINT 1")
 
-			if err != nil {
-				log.Panic(err)
+		if update.Message != nil {
+			if update.Message.IsCommand() {
+				fmt.Println("HELP")
+
+				err := BotCommandHandle(update, bot)
+
+				if err != nil {
+					log.Panic(err)
+				}
+				// in the future this should probably return the error directly to the main program so that we can actually handle it
+			} else {
+				fmt.Println("Help")
 			}
-			// in the future this should probably return the error directly to the main program so that we can actually handle it
 		}
-		// TODO - this should handle non-command messages 
 	}
+
+
+		// TODO - this should handle non-command messages
+
+
 }

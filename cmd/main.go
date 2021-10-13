@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	chat "tgcontextbot/internal/chatStorer"
 	start "tgcontextbot/internal/startup"
 )
 
@@ -12,7 +11,8 @@ import (
 
 func main() {
 	// urlExample := "postgres://username:password@localhost:5432/database_name"
-	/*conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
+	/*
+	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: chat%v\n", err)
 		os.Exit(1)
@@ -27,12 +27,8 @@ func main() {
 	}
 
 	fmt.Println(chat_id)
-	*/
 
-
-
-	//breakpoint
-	chat.BuildStorer()
+	 */
 	err, bot :=  start.InitializeBot()
 
 	if err != nil  {
