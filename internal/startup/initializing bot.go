@@ -77,13 +77,6 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	default:
 		msg.Text = "Я не знаю такой команды, простите"
 	}
-	isProfanity, errr := handle.FindProfanity(profanity, newUpd, bot)
-	if errr != nil {
-		return errr
-	}
-	if isProfanity {
-		msg.Text = "@" + newUpd.Message.From.UserName + " You have said curse word"
-	}
 	if msg.Text == "" {
 		msg.Text = "Временный костыль для тестирования"
 	}
@@ -96,7 +89,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	return nil
 }
 
-func ServeBot(bot *tgbotapi.BotAPI) {
+func ServeBot(bot *tgbotapi.BotAPI) error {
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
@@ -115,10 +108,32 @@ func ServeBot(bot *tgbotapi.BotAPI) {
 				}
 				// in the future this should probably return the error directly to the main program so that we can actually handle it
 			} else {
+				//fmt.Println("Help")
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+				isProfanity, errr := handle.FindProfanity(profanity, update, bot)
+				if errr != nil {
+					return errr
+				}
+				//fmt.Println(isProfanity)
+				if isProfanity == true {
+					msg.Text = "@" + update.Message.From.UserName + " You have said curse word"
+					_, err := bot.Send(msg)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		} else {
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+			isProfanity, errr := handle.FindProfanity(profanity, update, bot)
+			if errr != nil {
+				return errr
+			}
+			if isProfanity {
+				msg.Text = "@" + update.Message.From.UserName + " You have said curse word"
 			}
 		}
 	}
 
-	// TODO - this should handle non-command messages
-
+	return nil
 }
