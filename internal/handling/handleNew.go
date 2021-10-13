@@ -6,7 +6,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	chat "tgcontextbot/internal/chatStorer"
+	stor "tgcontextbot/internal/storage"
 )
 
 func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI)  error {
@@ -34,11 +34,18 @@ func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI)  error {
 		log.Println(err)
 	}
 
-	if chat.IsInChatDir(id) {
+	/*if chat.IsInChatDir(id) {
 		msg.Text = "Чат уже добавлен."
 	} else {
 		chat.AddToChatDir(id)
 		msg.Text = "Чат добавлен во внутреннюю базу данных"
+	}
+	*/
+
+	if stor.CheckIfPresentInChats(id) {
+		msg.Text = "Чат уже добавлен в базу данных!"
+	} else {
+		msg.Text = "Бот работает"
 	}
 
 	_, err = bot.Send(msg)
