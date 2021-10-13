@@ -5,7 +5,9 @@ import (
 	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 	"os"
+	"strings"
 	handle "tgcontextbot/internal/handling"
+	connect "tgcontextbot/internal/storage"
 )
 
 var profanity []string = nil
@@ -46,7 +48,9 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		return nil
 	case "addblacklist":
 		fmt.Println(newUpd.Message.Text)
+		/*
 		var ErrorWithHandlingBlackList error = nil
+
 		profanity, ErrorWithHandlingBlackList = handle.BotHandleProfanity(newUpd, bot)
 
 		if ErrorWithHandlingBlackList != nil {
@@ -54,6 +58,23 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		}
 
 		return nil
+		*/
+
+		var id int64 = newUpd.Message.Chat.ID
+
+		var s string
+		s = strings.Trim(newUpd.Message.Text, "/addblacklist")
+		fmt.Println(s)
+
+		err := connect.AddWordToBlacklist(id, s)
+
+		if err != nil {
+			log.Println(err)
+			msg.Text = "Что-то пошло не так. Проверьте, что ваш чат добавлен в нашу базу данных."
+		} else {
+			msg.Text = "Либо мы успешно добавили слова, либо ваш чат не в базе данных. 50/50"
+		}
+
 	case "watchblacklist":
 		fmt.Println(newUpd.Message.Text)
 		fmt.Println(profanity)
@@ -109,7 +130,7 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 				// in the future this should probably return the error directly to the main program so that we can actually handle it
 			} else {
 				//fmt.Println("Help")
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+				/*msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 				isProfanity, errr := handle.FindProfanity(profanity, update, bot)
 				if errr != nil {
 					return errr
@@ -122,15 +143,8 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 						return err
 					}
 				}
-			}
-		} else {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-			isProfanity, errr := handle.FindProfanity(profanity, update, bot)
-			if errr != nil {
-				return errr
-			}
-			if isProfanity {
-				msg.Text = "@" + update.Message.From.UserName + " You have said curse word"
+
+				 */
 			}
 		}
 	}
