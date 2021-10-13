@@ -47,7 +47,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	case "addblacklist":
 		fmt.Println(newUpd.Message.Text)
 		var ErrorWithHandlingBlackList error = nil
-		profanity,ErrorWithHandlingBlackList = handle.BotHandleProfanity(newUpd, bot)
+		profanity, ErrorWithHandlingBlackList = handle.BotHandleProfanity(newUpd, bot)
 
 		if ErrorWithHandlingBlackList != nil {
 			return ErrorWithHandlingBlackList
@@ -57,8 +57,8 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	case "watchblacklist":
 		fmt.Println(newUpd.Message.Text)
 		fmt.Println(profanity)
-		
-		for i := 0;i < len(profanity);i++{
+
+		for i := 0; i < len(profanity); i++ {
 			msg.Text += profanity[i]
 			msg.Text += "\n"
 		}
@@ -77,13 +77,6 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	default:
 		msg.Text = "Я не знаю такой команды, простите"
 	}
-	isProfanity, errr := handle.FindProfanity(profanity, newUpd, bot)
-	if errr != nil{
-		return errr
-	}
-	if isProfanity {
-		msg.Text = "@" + newUpd.Message.From.UserName + " You have said curse word"
-	}
 	if msg.Text == "" {
 		msg.Text = "Временный костыль для тестирования"
 	}
@@ -96,11 +89,8 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	return nil
 }
 
-
-func ServeBot(bot *tgbotapi.BotAPI) {
+func ServeBot(bot *tgbotapi.BotAPI) error {
 	log.Printf("Authorized on account %s", bot.Self.UserName)
-
-
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -108,11 +98,8 @@ func ServeBot(bot *tgbotapi.BotAPI) {
 	updates := bot.GetUpdatesChan(u)
 	for update := range updates {
 
-		fmt.Println("BREAKPOINT 1")
-
 		if update.Message != nil {
 			if update.Message.IsCommand() {
-				fmt.Println("HELP")
 
 				err := BotCommandHandle(update, bot)
 
@@ -121,13 +108,32 @@ func ServeBot(bot *tgbotapi.BotAPI) {
 				}
 				// in the future this should probably return the error directly to the main program so that we can actually handle it
 			} else {
-				fmt.Println("Help")
+				//fmt.Println("Help")
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+				isProfanity, errr := handle.FindProfanity(profanity, update, bot)
+				if errr != nil {
+					return errr
+				}
+				//fmt.Println(isProfanity)
+				if isProfanity == true {
+					msg.Text = "@" + update.Message.From.UserName + " You have said curse word"
+					_, err := bot.Send(msg)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		} else {
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+			isProfanity, errr := handle.FindProfanity(profanity, update, bot)
+			if errr != nil {
+				return errr
+			}
+			if isProfanity {
+				msg.Text = "@" + update.Message.From.UserName + " You have said curse word"
 			}
 		}
 	}
 
-
-		// TODO - this should handle non-command messages
-
-
+	return nil
 }

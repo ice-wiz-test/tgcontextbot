@@ -36,21 +36,24 @@ func FindProfanity(profanity []string, newUpd tgbotapi.Update, bot *tgbotapi.Bot
 
 	words := strings.Split(TextOfMessage, " ")
 
-	for i := 0;i < len(words);i++ {
+	for i := 0; i < len(words); i++ {
 		for j := 0; j < len(profanity); j++ {
 			if words[i] == profanity[j] {
 				var err error = nil
-				msg.Text = "Curse word have been found"
+
+				msg.Text = "Curse word has been found"
 				_, err = bot.Send(msg)
+
 				if err != nil {
 					return false, err
 				}
+
 				return true, err
 			}
 		}
 	}
 	var err error = nil
-	return false,err
+	return false, err
 }
 
 func UniqueNonEmptyElementsOf(s []string) []string {
