@@ -47,7 +47,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	case "addblacklist":
 		fmt.Println(newUpd.Message.Text)
 		var ErrorWithHandlingBlackList error = nil
-		profanity,ErrorWithHandlingBlackList = handle.BotHandleProfanity(newUpd, bot)
+		profanity, ErrorWithHandlingBlackList = handle.BotHandleProfanity(newUpd, bot)
 
 		if ErrorWithHandlingBlackList != nil {
 			return ErrorWithHandlingBlackList
@@ -57,8 +57,8 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	case "watchblacklist":
 		fmt.Println(newUpd.Message.Text)
 		fmt.Println(profanity)
-		
-		for i := 0;i < len(profanity);i++{
+
+		for i := 0; i < len(profanity); i++ {
 			msg.Text += profanity[i]
 			msg.Text += "\n"
 		}
@@ -78,7 +78,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		msg.Text = "Я не знаю такой команды, простите"
 	}
 	isProfanity, errr := handle.FindProfanity(profanity, newUpd, bot)
-	if errr != nil{
+	if errr != nil {
 		return errr
 	}
 	if isProfanity {
@@ -96,11 +96,8 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	return nil
 }
 
-
 func ServeBot(bot *tgbotapi.BotAPI) {
 	log.Printf("Authorized on account %s", bot.Self.UserName)
-
-
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -108,11 +105,8 @@ func ServeBot(bot *tgbotapi.BotAPI) {
 	updates := bot.GetUpdatesChan(u)
 	for update := range updates {
 
-		fmt.Println("BREAKPOINT 1")
-
 		if update.Message != nil {
 			if update.Message.IsCommand() {
-				fmt.Println("HELP")
 
 				err := BotCommandHandle(update, bot)
 
@@ -121,13 +115,10 @@ func ServeBot(bot *tgbotapi.BotAPI) {
 				}
 				// in the future this should probably return the error directly to the main program so that we can actually handle it
 			} else {
-				fmt.Println("Help")
 			}
 		}
 	}
 
-
-		// TODO - this should handle non-command messages
-
+	// TODO - this should handle non-command messages
 
 }

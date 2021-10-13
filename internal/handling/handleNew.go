@@ -1,7 +1,6 @@
 package handling
 
 import (
-	"fmt"
 	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 	"strconv"
@@ -21,7 +20,6 @@ func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	var id int64 = 0
 	var err error = nil
 	id, err = strconv.ParseInt(textOfMessage, 10, 64)
-	fmt.Println(textOfMessage)
 	if err != nil {
 		msg.Text = "Сообщение не является числом"
 		_, Err := bot.Send(msg)
@@ -45,7 +43,6 @@ func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	if stor.CheckIfPresentInChats(id) {
 		msg.Text = "Чат уже добавлен в базу данных!"
 	} else {
-		fmt.Println("GOT HERE")
 		check := stor.AddChatIDToDatabase(id)
 		if check == nil {
 			msg.Text = "Мы добавили ваш чат в базу данных."
