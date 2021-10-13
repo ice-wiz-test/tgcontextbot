@@ -9,13 +9,13 @@ import (
 	stor "tgcontextbot/internal/storage"
 )
 
-func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI)  error {
+func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 	msg := tgbotapi.NewMessage(newUpd.Message.Chat.ID, "")
 
 	var textOfMessage string = ""
 	textOfMessage = newUpd.Message.Text
-	fmt.Println(textOfMessage)
+
 	textOfMessage = strings.Trim(textOfMessage, "/addchat")
 	textOfMessage = strings.TrimSpace(textOfMessage)
 	var id int64 = 0
@@ -45,7 +45,14 @@ func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI)  error {
 	if stor.CheckIfPresentInChats(id) {
 		msg.Text = "Чат уже добавлен в базу данных!"
 	} else {
-		msg.Text = "Бот работает"
+		fmt.Println("GOT HERE")
+		check := stor.AddChatIDToDatabase(id)
+		if check == nil {
+			msg.Text = "Мы добавили ваш чат в базу данных."
+		} else {
+			log.Println(err)
+			msg.Text = "Что-то пошло не так("
+		}
 	}
 
 	_, err = bot.Send(msg)
@@ -57,5 +64,3 @@ func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI)  error {
 	return nil
 
 }
-
-

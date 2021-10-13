@@ -6,8 +6,6 @@ import (
 	"log"
 )
 
-
-
 func CheckIfPresentInChats(idd int64) bool {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 	if err != nil {
@@ -28,4 +26,22 @@ func CheckIfPresentInChats(idd int64) bool {
 
 	return true
 
+}
+
+func AddChatIDToDatabase(idd int64) error {
+	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	defer conn.Close(context.Background())
+
+	_, Err := conn.Exec(context.Background(), "insert into added_to_chats (id) values ($1)", idd)
+	if Err != nil {
+		log.Println(Err)
+		return Err
+	}
+
+	return nil
 }
