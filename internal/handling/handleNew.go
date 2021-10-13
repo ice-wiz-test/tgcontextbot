@@ -2,7 +2,7 @@ package handling
 
 import (
 	"fmt"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 	"strconv"
 	"strings"
@@ -50,3 +50,5 @@ func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI)  error {
 	return nil
 
 }
+
+
