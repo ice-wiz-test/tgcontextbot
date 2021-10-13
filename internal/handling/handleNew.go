@@ -45,6 +45,7 @@ func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI)  error {
 	if stor.CheckIfPresentInChats(id) {
 		msg.Text = "Чат уже добавлен в базу данных!"
 	} else {
+		fmt.Println("GOT HERE")
 		check := stor.AddChatIDToDatabase(id)
 		if check == nil {
 			msg.Text = "Мы добавили ваш чат в базу данных."

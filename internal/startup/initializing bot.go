@@ -8,6 +8,8 @@ import (
 	handle "tgcontextbot/internal/handling"
 )
 
+var profanity []string = nil
+
 func InitializeBot() (error, *tgbotapi.BotAPI) {
 	data, err := os.ReadFile("internal/startup/bottoken.txt")
 	if err != nil {
