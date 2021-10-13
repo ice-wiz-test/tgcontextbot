@@ -18,7 +18,7 @@ func BotHandleProfanity(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) ([]string,
 	profanity = UniqueNonEmptyElementsOf(profanity)
 
 	for i := 0; i > len(profanity); i++ {
-		strings.ToLower(profanity[i])
+		profanity[i] = strings.ToLower(profanity[i])
 	}
 
 	fmt.Println(profanity)
@@ -41,7 +41,7 @@ func FindProfanity(profanity []string, newUpd tgbotapi.Update, bot *tgbotapi.Bot
 	words := strings.Split(TextOfMessage, " ")
 
 	for i := 0; i < len(words); i++ {
-		strings.ToLower(words[i])
+		words[i] = strings.ToLower(profanity[i])
 		for j := 0; j < len(profanity); j++ {
 			if words[i] == profanity[j] {
 				var err error = nil
