@@ -28,7 +28,10 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	msg := tgbotapi.NewMessage(newUpd.Message.Chat.ID, "")
 	switch newUpd.Message.Command() {
 	case "start":
-		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота"
+		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота: " +
+			"\n /addchat - позволяет добавлять бота в новый чат \n /addblacklist - позволяет добавлять слова, употребление которых в чате нежелательно " +
+			"\n /watchblacklist - позволяет просматривать добавленные в черный список слдова " +
+			"\n /help - позволяет получить помощь"
 	case "addchat":
 		fmt.Println(newUpd.Message.Text)
 		var ErrorWithHandlingNewChat error = nil
@@ -39,9 +42,45 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		}
 
 		return nil
+	case "addblacklist":
+		fmt.Println(newUpd.Message.Text)
+		var ErrorWithHandlingBlackList error = nil
+		profanity,ErrorWithHandlingBlackList = handle.BotHandleProfanity(newUpd, bot)
 
+		if ErrorWithHandlingBlackList != nil {
+			return ErrorWithHandlingBlackList
+		}
+
+		return nil
+	case "watchblacklist":
+		fmt.Println(newUpd.Message.Text)
+		fmt.Println(profanity)
+		
+		for i := 0;i < len(profanity);i++{
+			msg.Text += profanity[i]
+			msg.Text += "\n"
+		}
+		_, err := bot.Send(msg)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	case "help":
+		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота: " +
+			"\n /addchat - позволяет добавлять бота в новый чат " +
+			"\n /addblacklist - позволяет добавлять слова, употребление которых в чате нежелательно " +
+			"\n /watchblacklist - позволяет просматривать добавленные в черный список слдова" +
+			"\n /help - позволяет получить помощь"
 	default:
 		msg.Text = "Я не знаю такой команды, простите"
+	}
+	isProfanity, errr := handle.FindProfanity(profanity, newUpd, bot)
+	if errr != nil{
+		return errr
+	}
+	if isProfanity {
+		msg.Text = "@" + newUpd.Message.From.UserName + " You have said curse word"
 	}
 	if msg.Text == "" {
 		msg.Text = "Временный костыль для тестирования"
@@ -54,6 +93,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 	return nil
 }
+
 
 func ServeBot(bot *tgbotapi.BotAPI) {
 	log.Printf("Authorized on account %s", bot.Self.UserName)
