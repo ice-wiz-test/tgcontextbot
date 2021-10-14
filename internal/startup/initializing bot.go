@@ -114,6 +114,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 }
 
 func ServeBot(bot *tgbotapi.BotAPI) error {
+
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
@@ -121,7 +122,7 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 
 	updates := bot.GetUpdatesChan(u)
 	for update := range updates {
-
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 		if update.Message != nil {
 			if update.Message.IsCommand() {
 
@@ -132,22 +133,23 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 				}
 				// in the future this should probably return the error directly to the main program so that we can actually handle it
 			} else {
-				//fmt.Println("Help")
-				/*msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-				isProfanity, errr := handle.FindProfanity(profanity, update, bot)
+				fmt.Println("KOSTYL")
+
+				allWords, errr := connect.GetAllBadWordsByChat(update.Message.Chat.ID)
+
 				if errr != nil {
-					return errr
-				}
-				//fmt.Println(isProfanity)
-				if isProfanity == true {
-					msg.Text = "@" + update.Message.From.UserName + " You have said curse word"
-					_, err := bot.Send(msg)
-					if err != nil {
-						return err
+					log.Println(errr)
+				} else {
+					if allWords == nil {
+						log.Println("This chat does not have any words")
+					} else {
+						if handle.CheckProf(&allWords, update.Message.Text) {
+							msg.Text = "Вы сказали запрещенно слово, не надо так."
+							_, _ = bot.Send(msg)
+						}
 					}
 				}
 
-				*/
 			}
 		}
 	}
