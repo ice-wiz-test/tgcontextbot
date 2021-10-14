@@ -13,7 +13,7 @@ func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	var textOfMessage string = ""
 	textOfMessage = newUpd.Message.Text
 
-	textOfMessage = strings.Trim(textOfMessage, "/addChat")
+	textOfMessage = strings.Trim(textOfMessage, "/addchat")
 	textOfMessage = strings.TrimSpace(textOfMessage)
 	var id int64 = 0
 	id = newUpd.Message.Chat.ID
