@@ -145,3 +145,18 @@ func GetAllBadWordsByChat(idd int64) ([]string, error) {
 	return allWords, nil
 
 }
+
+/*func AddWordToID(keystring string, idd int64) (error, string) {
+	var stringToSplit = strings.Trim(keystring, "/addphrase")
+	stringToSplit = strings.TrimSpace(stringToSplit)
+
+	var use []string = strings.Split(stringToSplit, "||")
+
+	if len(use) < 2 {
+		return nil, "В команде нету двух строк!"
+	}
+
+
+}
+
+*/

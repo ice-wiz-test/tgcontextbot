@@ -92,7 +92,14 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		}
 	case "deletefromblacklist":
 		fmt.Println(newUpd.Message.Text)
+	/*case "addphrase":
 
+	fmt.Println(newUpd.Message.Text)
+
+	err := connect.AddWordToID(newUpd.Message.Text, newUpd.Message.Chat.ID)
+
+
+	*/
 	case "help":
 		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота: " +
 			"\n /addchat - позволяет добавлять бота в новый чат " +
