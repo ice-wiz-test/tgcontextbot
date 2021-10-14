@@ -90,6 +90,8 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		if msg.Text == "" {
 			msg.Text = "В этом чате еще нету слов, которые мы отслеживаем."
 		}
+	case "deletefromblacklist":
+		fmt.Println(newUpd.Message.Text)
 
 	case "help":
 		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота: " +
@@ -129,13 +131,13 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 			elapsed := t.Sub(start)
 			dict[update.Message.From.ID]++
 			fmt.Println(dict[update.Message.From.ID])
-			if elapsed == 5000 && dict[update.Message.From.ID] > 30 {
+			if elapsed <= 5000 && dict[update.Message.From.ID] > 30 {
 				msg.Text = "You are spammer"
 				_, err := bot.Send(msg)
 				if err != nil {
 					return err
 				}
-			} else if elapsed == 5000 {
+			} else if elapsed >= 5000 {
 				start = time.Now()
 				dict = map[int]int{}
 			}
