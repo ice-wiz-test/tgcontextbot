@@ -32,10 +32,13 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	switch newUpd.Message.Command() {
 	case "start":
 		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота: " +
-			"\n /addchat - позволяет добавлять бота в новый чат \n /addblacklist - позволяет добавлять слова, употребление которых в чате нежелательно " +
-			"\n /watchblacklist - позволяет просматривать добавленные в черный список слдова " +
+			"\n /addChat - позволяет добавлять бота в новый чат " +
+			"\n /addBlacklist - позволяет добавлять слова, употребление которых в чате нежелательно " +
+			"\n /watchBlacklist - позволяет просматривать добавленные в черный список слдова " +
+			"\n /deleteFromBlacklist - позволяет просматривать добавленные в черный список слдова " +
 			"\n /help - позволяет получить помощь"
-	case "addchat":
+
+	case "addChat": //Command update, may cause conflicts
 		fmt.Println(newUpd.Message.Text)
 		var ErrorWithHandlingNewChat error = nil
 		ErrorWithHandlingNewChat = handle.BotNewChatHandle(newUpd, bot)
@@ -45,7 +48,8 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		}
 
 		return nil
-	case "addblacklist":
+
+	case "addBlacklist": //Command update, may cause conflicts
 		fmt.Println(newUpd.Message.Text)
 		/*
 			var ErrorWithHandlingBlackList error = nil
@@ -62,7 +66,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		var id = newUpd.Message.Chat.ID
 
 		var s string
-		s = strings.Trim(newUpd.Message.Text, "/addblacklist")
+		s = strings.Trim(newUpd.Message.Text, "/addBlacklist")
 		fmt.Println(s)
 
 		err := connect.AddWordToBlacklist(id, s)
@@ -74,7 +78,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			msg.Text = "Либо мы успешно добавили слова, либо ваш чат не в базе данных. 50/50"
 		}
 
-	case "watchblacklist":
+	case "watchBlacklist": //Command update, may cause conflicts
 		fmt.Println(newUpd.Message.Text)
 		allWords, errr := connect.GetAllBadWordsByChat(newUpd.Message.Chat.ID)
 
@@ -90,11 +94,12 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		if msg.Text == "" {
 			msg.Text = "В этом чате еще нету слов, которые мы отслеживаем."
 		}
-	case "deletefromblacklist":
+
+	case "deleteFromBlacklist": //Command update, may cause conflicts
 		var id = newUpd.Message.Chat.ID
 
 		var s string
-		s = strings.Trim(newUpd.Message.Text, "/deletefromblacklist")
+		s = strings.Trim(newUpd.Message.Text, "/deleteFromBlacklist")
 		fmt.Println(s, " HELP ME AAAA")
 
 		err := connect.DeleteWordFromBlacklist(id, s)
@@ -117,9 +122,10 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	*/
 	case "help":
 		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота: " +
-			"\n /addchat - позволяет добавлять бота в новый чат " +
-			"\n /addblacklist - позволяет добавлять слова, употребление которых в чате нежелательно " +
-			"\n /watchblacklist - позволяет просматривать добавленные в черный список слдова" +
+			"\n /addChat - позволяет добавлять бота в новый чат " +
+			"\n /addBlacklist - позволяет добавлять слова, употребление которых в чате нежелательно " +
+			"\n /watchBlacklist - позволяет просматривать добавленные в черный список слдова " +
+			"\n /deleteFromBlacklist - позволяет просматривать добавленные в черный список слдова " +
 			"\n /help - позволяет получить помощь"
 	default:
 		msg.Text = "Я не знаю такой команды, простите"
