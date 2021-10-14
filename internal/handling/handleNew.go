@@ -3,7 +3,6 @@ package handling
 import (
 	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
-	"strconv"
 	"strings"
 	stor "tgcontextbot/internal/storage"
 )
@@ -18,19 +17,7 @@ func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	textOfMessage = strings.Trim(textOfMessage, "/addchat")
 	textOfMessage = strings.TrimSpace(textOfMessage)
 	var id int64 = 0
-	var err error = nil
-	id, err = strconv.ParseInt(textOfMessage, 10, 64)
-	if err != nil {
-		msg.Text = "Сообщение не является числом"
-		_, Err := bot.Send(msg)
-		if Err != nil {
-			log.Println(Err)
-			return Err
-		}
-
-		return err
-		log.Println(err)
-	}
+	id = newUpd.Message.Chat.ID
 
 	/*if chat.IsInChatDir(id) {
 		msg.Text = "Чат уже добавлен."
@@ -40,6 +27,7 @@ func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	}
 	*/
 
+	var err error
 	if stor.CheckIfPresentInChats(id) {
 		msg.Text = "Чат уже добавлен в базу данных!"
 	} else {
