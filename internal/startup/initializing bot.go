@@ -59,7 +59,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			return nil
 		*/
 
-		var id int64 = newUpd.Message.Chat.ID
+		var id = newUpd.Message.Chat.ID
 
 		var s string
 		s = strings.Trim(newUpd.Message.Text, "/addblacklist")
@@ -91,6 +91,21 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			msg.Text = "В этом чате еще нету слов, которые мы отслеживаем."
 		}
 	case "deletefromblacklist":
+		var id = newUpd.Message.Chat.ID
+
+		var s string
+		s = strings.Trim(newUpd.Message.Text, "/addblacklist")
+		fmt.Println(s)
+
+		err := connect.DeleteWordFromBlacklist(id, s)
+
+		if err != nil {
+			log.Println(err)
+			msg.Text = "Что-то пошло не так. Проверьте, что ваш чат добавлен в нашу базу данных."
+		} else {
+			msg.Text = "Либо мы успешно добавили слова, либо ваш чат не в базе данных. 50/50"
+		}
+
 		fmt.Println(newUpd.Message.Text)
 	/*case "addphrase":
 
