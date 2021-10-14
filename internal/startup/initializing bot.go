@@ -47,17 +47,6 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		return nil
 	case "addblacklist":
 		fmt.Println(newUpd.Message.Text)
-		/*
-			var ErrorWithHandlingBlackList error = nil
-
-			profanity, ErrorWithHandlingBlackList = handle.BotHandleProfanity(newUpd, bot)
-
-			if ErrorWithHandlingBlackList != nil {
-				return ErrorWithHandlingBlackList
-			}
-
-			return nil
-		*/
 
 		var id = newUpd.Message.Chat.ID
 
@@ -66,7 +55,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		fmt.Println(s)
 
 		err := connect.AddWordToBlacklist(id, s)
-
+		//TODO - сюда нужна нормальная проверка на присуствие чата в базе данных, а не вот это постироничное сообщение
 		if err != nil {
 			log.Println(err)
 			msg.Text = "Что-то пошло не так. Проверьте, что ваш чат добавлен в нашу базу данных."
@@ -95,7 +84,6 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 		var s string
 		s = strings.Trim(newUpd.Message.Text, "/deletefromblacklist")
-		fmt.Println(s, " HELP ME AAAA")
 
 		err := connect.DeleteWordFromBlacklist(id, s)
 
@@ -107,14 +95,21 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		}
 
 		fmt.Println(newUpd.Message.Text)
-	/*case "addphrase":
+	case "guide":
+		msg.Text = "Wrong path, sorry mate."
 
-	fmt.Println(newUpd.Message.Text)
+	case "setsubstitutewith":
 
-	err := connect.AddWordToID(newUpd.Message.Text, newUpd.Message.Chat.ID)
+		fmt.Println(newUpd.Message.Text)
 
+		Err, answer := connect.AddWordToID(newUpd.Message.Text, newUpd.Message.Chat.ID)
 
-	*/
+		if Err != nil {
+			return Err
+		}
+
+		msg.Text = answer
+
 	case "help":
 		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота: " +
 			"\n /addchat - позволяет добавлять бота в новый чат " +

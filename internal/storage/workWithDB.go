@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+//TODO - rewrite all functions that work with databases into (error, string) format
 func CheckIfPresentInChats(idd int64) bool {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 	if err != nil {
@@ -202,4 +203,51 @@ func DeleteWordFromBlacklist(idd int64, badWord string) error {
 	}
 
 	return nil
+}
+
+func AddWordToID(keystring string, idd int64) (error, string) {
+	var s string
+	s = strings.Trim(keystring, "/setsubstitutewith ")
+	s = strings.TrimSpace(s)
+	var allString []string
+
+	allString = strings.Split(s, "||")
+
+	if len(allString) != 3 {
+		return nil, "В команде не два слова, или они разделены неправильными символами(не ||). Пример - /setsubstitutewith aboba||amongus||"
+	}
+	var first string
+	var second string
+	first = allString[0]
+	second = allString[1]
+	var checker string
+	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
+
+	if err != nil {
+		return err, "Ошибка при соединении с базой данных"
+	}
+	newRows, Err := conn.Query(context.Background(), "select replace_phrase from chat_phrases where chat_id = $1 and find_phrase = $2", idd, first)
+
+	if Err != nil {
+		return Err, "Мы не сумели подключиться к базе данных. Повторите запрос через какое-то время."
+	}
+	var cnt int64 = 0
+	for newRows.Next() {
+		cnt++
+		ErrWithParse := newRows.Scan(&checker)
+		fmt.Println(checker, " CHECKER ")
+		if ErrWithParse != nil {
+			return ErrWithParse, "Ошибка при работе с базой данных."
+		}
+	}
+	if cnt != 0 {
+		return nil, "Уже есть заменитель на эту фразу"
+	}
+	_, Err = conn.Exec(context.Background(), "insert into chat_phrases (chat_id, find_phrase, replace_phrase) values ($1, $2, $3)", idd, first, second)
+
+	if Err != nil {
+		return Err, "Мы не сумели подключиться к базе данных. Повторите запрос через какое-то время."
+	}
+
+	return nil, "Набор фраз добавлен"
 }
