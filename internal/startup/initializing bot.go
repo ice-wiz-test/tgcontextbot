@@ -8,9 +8,8 @@ import (
 	"strings"
 	handle "tgcontextbot/internal/handling"
 	connect "tgcontextbot/internal/storage"
+	"time"
 )
-
-var profanity []string = nil
 
 func InitializeBot() (error, *tgbotapi.BotAPI) {
 	data, err := os.ReadFile("internal/startup/bottoken.txt")
@@ -121,9 +120,25 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 	u.Timeout = 60
 
 	updates := bot.GetUpdatesChan(u)
+	start := time.Now()
+	dict := map[int]int{}
 	for update := range updates {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 		if update.Message != nil {
+			t := time.Now()
+			elapsed := t.Sub(start)
+			dict[update.Message.From.ID]++
+			fmt.Println(dict[update.Message.From.ID])
+			if elapsed == 5000 && dict[update.Message.From.ID] > 30 {
+				msg.Text = "You are spammer"
+				_, err := bot.Send(msg)
+				if err != nil {
+					return err
+				}
+			} else if elapsed == 5000 {
+				start = time.Now()
+				dict = map[int]int{}
+			}
 			if update.Message.IsCommand() {
 
 				err := BotCommandHandle(update, bot)
