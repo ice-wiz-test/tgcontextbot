@@ -8,7 +8,6 @@ import (
 )
 
 func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
-
 	msg := tgbotapi.NewMessage(newUpd.Message.Chat.ID, "")
 
 	var textOfMessage string = ""
