@@ -120,13 +120,13 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 	u.Timeout = 60
 
 	updates := bot.GetUpdatesChan(u)
-	start := time.Now()
+	start := time.Now().UnixNano()
 	dict := map[int]int{}
 	for update := range updates {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 		if update.Message != nil {
-			t := time.Now()
-			elapsed := t.Sub(start)
+			t := time.Now().UnixNano()
+			elapsed := (t - start) / 1000000
 			dict[update.Message.From.ID]++
 			fmt.Println(dict[update.Message.From.ID])
 			if elapsed == 5000 && dict[update.Message.From.ID] > 30 {
@@ -136,7 +136,7 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 					return err
 				}
 			} else if elapsed == 5000 {
-				start = time.Now()
+				start = time.Now().UnixNano()
 				dict = map[int]int{}
 			}
 			if update.Message.IsCommand() {
