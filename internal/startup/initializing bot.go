@@ -23,8 +23,8 @@ func InitializeBot() (error, *tgbotapi.BotAPI) {
 	if err != nil {
 		return err, nil
 	}
-	return nil, bot
 
+	return nil, bot
 }
 
 func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
