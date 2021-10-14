@@ -49,15 +49,15 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	case "addblacklist":
 		fmt.Println(newUpd.Message.Text)
 		/*
-		var ErrorWithHandlingBlackList error = nil
+			var ErrorWithHandlingBlackList error = nil
 
-		profanity, ErrorWithHandlingBlackList = handle.BotHandleProfanity(newUpd, bot)
+			profanity, ErrorWithHandlingBlackList = handle.BotHandleProfanity(newUpd, bot)
 
-		if ErrorWithHandlingBlackList != nil {
-			return ErrorWithHandlingBlackList
-		}
+			if ErrorWithHandlingBlackList != nil {
+				return ErrorWithHandlingBlackList
+			}
 
-		return nil
+			return nil
 		*/
 
 		var id int64 = newUpd.Message.Chat.ID
@@ -77,18 +77,21 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 	case "watchblacklist":
 		fmt.Println(newUpd.Message.Text)
-		fmt.Println(profanity)
+		allWords, errr := connect.GetAllBadWordsByChat(newUpd.Message.Chat.ID)
 
-		for i := 0; i < len(profanity); i++ {
-			msg.Text += profanity[i]
+		if errr != nil {
+			return errr
+		}
+
+		for i := 0; i < len(allWords); i++ {
+			msg.Text += allWords[i]
 			msg.Text += "\n"
 		}
-		_, err := bot.Send(msg)
-		if err != nil {
-			return err
+
+		if msg.Text == "" {
+			msg.Text = "В этом чате еще нету слов, которые мы отслеживаем."
 		}
 
-		return nil
 	case "help":
 		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота: " +
 			"\n /addchat - позволяет добавлять бота в новый чат " +
@@ -144,7 +147,7 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 					}
 				}
 
-				 */
+				*/
 			}
 		}
 	}

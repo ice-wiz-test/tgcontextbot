@@ -48,7 +48,7 @@ func AddChatIDToDatabase(idd int64) error {
 	return nil
 }
 
-func AddWordToBlacklist(idd int64, badWord string) error{
+func AddWordToBlacklist(idd int64, badWord string) error {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 
 	if err != nil {
@@ -62,9 +62,7 @@ func AddWordToBlacklist(idd int64, badWord string) error{
 
 	var badWordByChat []string = nil
 
-	newRows , Err := conn.Query(context.Background(), "select badword from added_to_chats where id = $1", idd)
-
-
+	newRows, Err := conn.Query(context.Background(), "select badword from added_to_chats where id = $1", idd)
 
 	if Err != nil {
 		return Err
@@ -86,10 +84,10 @@ func AddWordToBlacklist(idd int64, badWord string) error{
 	var flag bool = false
 	var i int = 0
 	var j int = 0
-	for i = 0; i < len(allBadWords);i++ {
+	for i = 0; i < len(allBadWords); i++ {
 		fmt.Println(allBadWords[i])
 		flag = false
-		for j = 0; j < len(badWordByChat);j++ {
+		for j = 0; j < len(badWordByChat); j++ {
 			if allBadWords[i] == badWordByChat[j] {
 				flag = true
 			}
@@ -106,4 +104,44 @@ func AddWordToBlacklist(idd int64, badWord string) error{
 	}
 
 	return nil
+}
+
+func GetAllBadWordsByChat(idd int64) ([]string, error) {
+	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	defer conn.Close(context.Background())
+
+	newRows, Err := conn.Query(context.Background(), "select badword from added_to_chats where id = $1", idd)
+
+	if Err != nil {
+		log.Println(Err)
+		return nil, Err
+	}
+
+	if newRows == nil {
+		return nil, nil
+	}
+
+	var allWords []string = nil
+
+	for newRows.Next() {
+		var txt string
+
+		errWithParse := newRows.Scan(&txt)
+
+		if errWithParse != nil {
+			return nil, errWithParse
+		}
+
+		allWords = append(allWords, txt)
+
+	}
+
+	return allWords, nil
+
 }
