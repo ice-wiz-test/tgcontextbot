@@ -183,16 +183,16 @@ func DeleteWordFromBlacklist(idd int64, badWord string) error {
 	var i = 0
 	var j = 0
 	for i = 0; i < len(allBadWords); i++ {
-		fmt.Println(allBadWords[i])
-		flag = false
+		flag = true
 		for j = 0; j < len(badWordByChat); j++ {
-			if allBadWords[i] != badWordByChat[j] {
-				flag = true
+			if allBadWords[i] == badWordByChat[j] {
+				flag = false
 			}
 		}
 
 		if !flag {
-			_, err = conn.Exec(context.Background(), "delete from added_to_chats where (id, badword) values ($1, $2)", idd, allBadWords[i])
+			fmt.Println(idd, " ", allBadWords[i])
+			_, err = conn.Exec(context.Background(), "delete from added_to_chats where id = $1 and badword = $2", idd, allBadWords[i])
 
 			if err != nil {
 				fmt.Println(err)

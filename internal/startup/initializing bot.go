@@ -94,8 +94,8 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		var id = newUpd.Message.Chat.ID
 
 		var s string
-		s = strings.Trim(newUpd.Message.Text, "/addblacklist")
-		fmt.Println(s)
+		s = strings.Trim(newUpd.Message.Text, "/deletefromblacklist")
+		fmt.Println(s, " HELP ME AAAA")
 
 		err := connect.DeleteWordFromBlacklist(id, s)
 
