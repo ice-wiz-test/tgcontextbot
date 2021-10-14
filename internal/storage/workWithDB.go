@@ -107,7 +107,7 @@ func AddWordToBlacklist(idd int64, badWord string) error {
 	return nil
 }
 
-func GetAllBadWordsByChat(idd int64) ([]string, error) {
+func GetAllBadWordsByChat(idd int64) (*[]string, error) {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 
 	if err != nil {
@@ -143,7 +143,7 @@ func GetAllBadWordsByChat(idd int64) ([]string, error) {
 
 	}
 
-	return allWords, nil
+	return &allWords, nil
 
 }
 
@@ -226,6 +226,8 @@ func AddWordToID(keystring string, idd int64) (error, string) {
 	if err != nil {
 		return err, "Ошибка при соединении с базой данных"
 	}
+	defer conn.Close(context.Background())
+
 	newRows, Err := conn.Query(context.Background(), "select replace_phrase from chat_phrases where chat_id = $1 and find_phrase = $2", idd, first)
 
 	if Err != nil {
@@ -250,4 +252,36 @@ func AddWordToID(keystring string, idd int64) (error, string) {
 	}
 
 	return nil, "Набор фраз добавлен"
+}
+
+func GetAllPairsFromChat(idd int64) (*[]string, *[]string, error, string) {
+	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
+
+	if err != nil {
+		return nil, nil, err, "Мы не сумели установить соединение с базой данных"
+	}
+	defer conn.Close(context.Background())
+	newRows, err := conn.Query(context.Background(), "select find_phrase, replace_phrase from chat_phrases where chat_id = $1", idd)
+	var firstPair []string = nil
+	var secondPair []string = nil
+	var firstWordInPair string
+	var secondWordInPair string
+
+	if newRows == nil {
+		return nil, nil, nil, "В данном чате нету замен"
+	}
+	for newRows.Next() {
+		fmt.Println("HELPME")
+		ErrWithParse := newRows.Scan(&firstWordInPair, &secondWordInPair)
+
+		if ErrWithParse != nil {
+			return nil, nil, ErrWithParse, "Ошибка при работе с базой данных"
+		}
+
+		firstPair = append(firstPair, firstWordInPair)
+
+		secondPair = append(secondPair, secondWordInPair)
+	}
+
+	return &firstPair, &secondPair, nil, "Все успешно."
 }

@@ -45,6 +45,32 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		}
 
 		return nil
+
+	case "getpairs":
+		fmt.Println(newUpd.Message.Text)
+
+		firstptr, secondptr, ErrWithHandling, answer := connect.GetAllPairsFromChat(newUpd.Message.Chat.ID)
+
+		msg.Text = answer
+
+		if ErrWithHandling != nil {
+			log.Println(ErrWithHandling)
+			return ErrWithHandling
+		}
+		if firstptr != nil {
+			fmt.Println("HERE")
+			fmt.Println(len(*firstptr))
+			for i := 0; i < len(*firstptr); i++ {
+				fmt.Println(i, " I ")
+				msg.Text += "\n"
+				msg.Text += (*firstptr)[i]
+				msg.Text += " -> "
+				msg.Text += (*secondptr)[i]
+			}
+		} else {
+			fmt.Println("YEaH")
+			msg.Text = "Пар нету"
+		}
 	case "addblacklist":
 		fmt.Println(newUpd.Message.Text)
 
@@ -54,13 +80,18 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		s = strings.Trim(newUpd.Message.Text, "/addblacklist")
 		fmt.Println(s)
 
-		err := connect.AddWordToBlacklist(id, s)
-		//TODO - сюда нужна нормальная проверка на присуствие чата в базе данных, а не вот это постироничное сообщение
-		if err != nil {
-			log.Println(err)
-			msg.Text = "Что-то пошло не так. Проверьте, что ваш чат добавлен в нашу базу данных."
+		if len(s) >= 3 {
+			err := connect.AddWordToBlacklist(id, s)
+
+			//TODO - сюда нужна нормальная проверка на присуствие чата в базе данных, а не вот это постироничное сообщение
+			if err != nil {
+				log.Println(err)
+				msg.Text = "Что-то пошло не так. Проверьте, что ваш чат добавлен в нашу базу данных."
+			} else {
+				msg.Text = "Либо мы успешно добавили слова, либо ваш чат не в базе данных. 50/50"
+			}
 		} else {
-			msg.Text = "Либо мы успешно добавили слова, либо ваш чат не в базе данных. 50/50"
+			msg.Text = "Чтобы бот не отвечал на практически все сообщения, нельзя банить слова меньше 3 букв. Ну изивните."
 		}
 
 	case "watchblacklist":
@@ -71,8 +102,8 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			return errr
 		}
 
-		for i := 0; i < len(allWords); i++ {
-			msg.Text += allWords[i]
+		for i := 0; i < len(*allWords); i++ {
+			msg.Text += (*allWords)[i]
 			msg.Text += "\n"
 		}
 
@@ -99,7 +130,6 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		msg.Text = "Wrong path, sorry mate."
 
 	case "setsubstitutewith":
-
 		fmt.Println(newUpd.Message.Text)
 
 		Err, answer := connect.AddWordToID(newUpd.Message.Text, newUpd.Message.Chat.ID)
@@ -176,8 +206,8 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 					if allWords == nil {
 						log.Println("This chat does not have any words")
 					} else {
-						if handle.CheckProf(&allWords, update.Message.Text) {
-							msg.Text = "Вы сказали запрещенно слово, не надо так."
+						if handle.CheckProf(allWords, update.Message.Text) {
+							msg.Text = "Вы сказали запрещенное слово, не надо так."
 							_, _ = bot.Send(msg)
 						}
 					}
