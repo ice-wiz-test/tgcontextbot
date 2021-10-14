@@ -120,6 +120,7 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 	u.Timeout = 60
 
 	updates := bot.GetUpdatesChan(u)
+
 	start := time.Now().UnixNano()
 	dict := map[int]int{}
 	for update := range updates {
