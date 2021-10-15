@@ -57,7 +57,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			log.Println(ErrWithHandling)
 			return ErrWithHandling
 		}
-		if firstptr != nil {
+		if firstptr != nil && len(*firstptr) != 0 {
 			fmt.Println("HERE")
 			fmt.Println(len(*firstptr))
 			for i := 0; i < len(*firstptr); i++ {
@@ -68,7 +68,6 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 				msg.Text += (*secondptr)[i]
 			}
 		} else {
-			fmt.Println("YEaH")
 			msg.Text = "Пар нету"
 		}
 	case "deletesubstitute":
