@@ -285,3 +285,24 @@ func GetAllPairsFromChat(idd int64) (*[]string, *[]string, error, string) {
 
 	return &firstPair, &secondPair, nil, "Все успешно."
 }
+
+func DeleteWordFromChat(idd int64, key string) (error, string) {
+	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
+
+	var s string = strings.Trim(key, "/deletesubstitute")
+
+	s = strings.TrimSpace(s)
+
+	if err != nil {
+		return err, "Мы не сумели установить соединение с базой данных"
+	}
+	defer conn.Close(context.Background())
+
+	_, err = conn.Exec(context.Background(), "delete from chat_phrases where chat_id = $1 and find_phrase = $2", idd, s)
+
+	if err != nil {
+		return err, "Что-то пошло не так. Попробуйте позже."
+	} else {
+		return nil, "Все успешно."
+	}
+}

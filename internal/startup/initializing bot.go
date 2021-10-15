@@ -71,6 +71,17 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			fmt.Println("YEaH")
 			msg.Text = "Пар нету"
 		}
+	case "deletesubstitute":
+		fmt.Println(newUpd.Message.Text)
+
+		ErrWithParse, s := connect.DeleteWordFromChat(newUpd.Message.Chat.ID, newUpd.Message.Text)
+
+		if ErrWithParse != nil {
+			log.Println(ErrWithParse)
+		}
+
+		msg.Text = s
+
 	case "addblacklist":
 		fmt.Println(newUpd.Message.Text)
 
