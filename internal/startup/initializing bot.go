@@ -138,7 +138,11 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 		fmt.Println(newUpd.Message.Text)
 	case "guide":
-		msg.Text = "Wrong path, sorry mate."
+		msg.Text = "https://github.com/ice-wiz-test/tgcontextbot/blob/main/guide.md"
+		_, err := bot.Send(msg)
+		if err != nil {
+			return err
+		}
 
 	case "setsubstitutewith":
 		fmt.Println(newUpd.Message.Text)
