@@ -1,6 +1,7 @@
 package startup
 
 import (
+	"fmt"
 	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 	"os"
@@ -35,6 +36,21 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			"\n /addchat - позволяет добавлять бота в новый чат \n /addblacklist - позволяет добавлять слова, употребление которых в чате нежелательно " +
 			"\n /watchblacklist - позволяет просматривать добавленные в черный список слдова " +
 			"\n /help - позволяет получить помощь"
+	case "addexceptiontosubstitute":
+		var s string = strings.TrimLeft(newUpd.Message.Text, "/addexceptiontosubstitute")
+		s = strings.TrimSpace(s)
+		var mass []string = strings.Split(s, "||")
+		if len(mass) != 3 {
+			msg.Text = "Неверный формат. Используйте формат excepted_phrase||excepted_username|| для таких запросов"
+		} else {
+			ErrWithDB, str := connect.AddException(newUpd.Message.Chat.ID, mass[0], mass[1])
+			if ErrWithDB != nil {
+				log.Println(ErrWithDB)
+
+			}
+
+			msg.Text = str
+		}
 	case "addchat":
 
 		var ErrorWithHandlingNewChat error = nil
@@ -81,7 +97,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		var id = newUpd.Message.Chat.ID
 
 		var s string
-		s = strings.Trim(newUpd.Message.Text, "/addblacklist")
+		s = strings.TrimLeft(newUpd.Message.Text, "/addblacklist")
 
 		if len(s) >= 3 {
 			err := connect.AddWordToBlacklist(id, s)
@@ -146,6 +162,24 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			"\n /addblacklist - позволяет добавлять слова, употребление которых в чате нежелательно " +
 			"\n /watchblacklist - позволяет просматривать добавленные в черный список слдова" +
 			"\n /help - позволяет получить помощь"
+	case "deleteexception":
+		fmt.Println(newUpd.Message.Text)
+		var s string = strings.TrimLeft(newUpd.Message.Text, "/deletexcepetion")
+		s = strings.TrimSpace(s)
+		var mass []string = strings.Split(s, "||")
+
+		if len(mass) != 3 {
+			msg.Text = "Неверный формат. Используйте формат excepted_phrase||excepted_username|| для таких запросов"
+		} else {
+			ErrWithDB, str := connect.DeleteExceptedWord(newUpd.Message.Chat.ID, mass[1], mass[0])
+			if ErrWithDB != nil {
+				log.Println(ErrWithDB)
+
+			}
+
+			msg.Text = str
+		}
+
 	default:
 		msg.Text = "Я не знаю такой команды, простите"
 	}
@@ -212,18 +246,23 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 
 						firstptr, secondptr, err, _ := connect.GetAllPairsFromChat(update.Message.Chat.ID)
 
-						if err == nil {
-							err = handle.CheckMSG(firstptr, secondptr, update, bot)
+						exceptPTR, ErrWithParse, _ := connect.GetWordsByException(update.Message.Chat.ID, update.Message.From.UserName)
+
+						if err == nil && ErrWithParse == nil {
+							err = handle.CheckMSG(firstptr, secondptr, exceptPTR, update, bot)
+						} else {
 							if err != nil {
 								log.Println(err)
 							}
-						} else {
-							log.Println(err)
+
+							if ErrWithParse != nil {
+								log.Println(ErrWithParse)
+							}
 						}
 					}
 				}
-
 			}
+
 		}
 	}
 

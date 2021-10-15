@@ -1,7 +1,6 @@
 package handling
 
 import (
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"strings"
 )
 
@@ -12,21 +11,4 @@ func CheckProf(badWords *[]string, find string) bool {
 		}
 	}
 	return false
-}
-
-func CheckMSG(firstPair *[]string, secondPair *[]string, newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
-	for i := 0; i < len(*firstPair); i++ {
-		if strings.Contains(newUpd.Message.Text, (*firstPair)[i]) {
-			msg := tgbotapi.NewMessage(newUpd.Message.Chat.ID, "")
-			msg.Text = (*secondPair)[i]
-
-			_, err := bot.Send(msg)
-			if err != nil {
-				return err
-			}
-		}
-
-	}
-
-	return nil
 }
