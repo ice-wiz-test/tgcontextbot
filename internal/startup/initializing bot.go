@@ -224,6 +224,17 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 							msg.Text = "Вы сказали запрещенное слово, не надо так."
 							_, _ = bot.Send(msg)
 						}
+
+						firstptr, secondptr, err, _ := connect.GetAllPairsFromChat(update.Message.Chat.ID)
+
+						if err == nil {
+							err = handle.CheckMSG(firstptr, secondptr, update, bot)
+							if err != nil {
+								return err
+							}
+						} else {
+							return err
+						}
 					}
 				}
 
