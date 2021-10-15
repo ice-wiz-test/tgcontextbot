@@ -2,7 +2,6 @@ package handling
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"log"
 	"strings"
 )
 
@@ -23,7 +22,6 @@ func CheckMSG(firstPair *[]string, secondPair *[]string, newUpd tgbotapi.Update,
 
 			_, err := bot.Send(msg)
 			if err != nil {
-				log.Println(err)
 				return err
 			}
 		}

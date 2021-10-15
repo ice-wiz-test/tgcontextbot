@@ -2,7 +2,6 @@ package handling
 
 import (
 	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"log"
 	"strings"
 	stor "tgcontextbot/internal/storage"
 )
@@ -18,14 +17,6 @@ func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	var id int64 = 0
 	id = newUpd.Message.Chat.ID
 
-	/*if chat.IsInChatDir(id) {
-		msg.Text = "Чат уже добавлен."
-	} else {
-		chat.AddToChatDir(id)
-		msg.Text = "Чат добавлен во внутреннюю базу данных"
-	}
-	*/
-
 	var err error
 	if stor.CheckIfPresentInChats(id) {
 		msg.Text = "Чат уже добавлен в базу данных!"
@@ -34,14 +25,13 @@ func BotNewChatHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		if check == nil {
 			msg.Text = "Мы добавили ваш чат в базу данных."
 		} else {
-			log.Println(err)
+			return check
 			msg.Text = "Что-то пошло не так("
 		}
 	}
 
 	_, err = bot.Send(msg)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 

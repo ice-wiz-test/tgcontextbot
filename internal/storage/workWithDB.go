@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"fmt"
 	db "github.com/jackc/pgx/v4"
 	"log"
 	"strings"
@@ -34,7 +33,6 @@ func CheckIfPresentInChats(idd int64) bool {
 func AddChatIDToDatabase(idd int64) error {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
@@ -42,7 +40,6 @@ func AddChatIDToDatabase(idd int64) error {
 
 	_, Err := conn.Exec(context.Background(), "insert into added_to_chats (id, badword) values ($1, 'placeholder')", idd)
 	if Err != nil {
-		log.Println(Err)
 		return Err
 	}
 
@@ -53,7 +50,6 @@ func AddWordToBlacklist(idd int64, badWord string) error {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
@@ -86,7 +82,6 @@ func AddWordToBlacklist(idd int64, badWord string) error {
 	var i int = 0
 	var j int = 0
 	for i = 0; i < len(allBadWords); i++ {
-		fmt.Println(allBadWords[i])
 		flag = false
 		for j = 0; j < len(badWordByChat); j++ {
 			if allBadWords[i] == badWordByChat[j] {
@@ -98,7 +93,6 @@ func AddWordToBlacklist(idd int64, badWord string) error {
 			_, err = conn.Exec(context.Background(), "insert into added_to_chats (id, badword) values ($1, $2)", idd, allBadWords[i])
 
 			if err != nil {
-				fmt.Println(err)
 				return err
 			}
 		}
@@ -111,7 +105,6 @@ func GetAllBadWordsByChat(idd int64) (*[]string, error) {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 
@@ -120,7 +113,6 @@ func GetAllBadWordsByChat(idd int64) (*[]string, error) {
 	newRows, Err := conn.Query(context.Background(), "select badword from added_to_chats where id = $1", idd)
 
 	if Err != nil {
-		log.Println(Err)
 		return nil, Err
 	}
 
@@ -151,7 +143,6 @@ func DeleteWordFromBlacklist(idd int64, badWord string) error {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
@@ -192,11 +183,9 @@ func DeleteWordFromBlacklist(idd int64, badWord string) error {
 		}
 
 		if !flag {
-			fmt.Println(idd, " ", allBadWords[i])
 			_, err = conn.Exec(context.Background(), "delete from added_to_chats where id = $1 and badword = $2", idd, allBadWords[i])
 
 			if err != nil {
-				fmt.Println(err)
 				return err
 			}
 		}
@@ -237,7 +226,6 @@ func AddWordToID(keystring string, idd int64) (error, string) {
 	for newRows.Next() {
 		cnt++
 		ErrWithParse := newRows.Scan(&checker)
-		fmt.Println(checker, " CHECKER ")
 		if ErrWithParse != nil {
 			return ErrWithParse, "Ошибка при работе с базой данных."
 		}
@@ -271,7 +259,6 @@ func GetAllPairsFromChat(idd int64) (*[]string, *[]string, error, string) {
 		return nil, nil, nil, "В данном чате нету замен"
 	}
 	for newRows.Next() {
-		fmt.Println("HELPME")
 		ErrWithParse := newRows.Scan(&firstWordInPair, &secondWordInPair)
 
 		if ErrWithParse != nil {
@@ -288,11 +275,8 @@ func GetAllPairsFromChat(idd int64) (*[]string, *[]string, error, string) {
 
 func DeleteWordFromChat(idd int64, key string) (error, string) {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
-
-	var s string = strings.Trim(key, "/deletesubstitute")
-
+	var s string = strings.TrimLeft(key, "/deletesubstitute")
 	s = strings.TrimSpace(s)
-
 	if err != nil {
 		return err, "Мы не сумели установить соединение с базой данных"
 	}

@@ -1,7 +1,6 @@
 package startup
 
 import (
-	"fmt"
 	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 	"os"
@@ -27,6 +26,7 @@ func InitializeBot() (error, *tgbotapi.BotAPI) {
 
 }
 
+//TODO - we should standarize handling errors inside the BotCommandHandle function
 func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	msg := tgbotapi.NewMessage(newUpd.Message.Chat.ID, "")
 	switch newUpd.Message.Command() {
@@ -36,7 +36,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			"\n /watchblacklist - позволяет просматривать добавленные в черный список слдова " +
 			"\n /help - позволяет получить помощь"
 	case "addchat":
-		fmt.Println(newUpd.Message.Text)
+
 		var ErrorWithHandlingNewChat error = nil
 		ErrorWithHandlingNewChat = handle.BotNewChatHandle(newUpd, bot)
 
@@ -47,7 +47,6 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		return nil
 
 	case "getpairs":
-		fmt.Println(newUpd.Message.Text)
 
 		firstptr, secondptr, ErrWithHandling, answer := connect.GetAllPairsFromChat(newUpd.Message.Chat.ID)
 
@@ -58,10 +57,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			return ErrWithHandling
 		}
 		if firstptr != nil && len(*firstptr) != 0 {
-			fmt.Println("HERE")
-			fmt.Println(len(*firstptr))
 			for i := 0; i < len(*firstptr); i++ {
-				fmt.Println(i, " I ")
 				msg.Text += "\n"
 				msg.Text += (*firstptr)[i]
 				msg.Text += " -> "
@@ -71,7 +67,6 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			msg.Text = "Пар нету"
 		}
 	case "deletesubstitute":
-		fmt.Println(newUpd.Message.Text)
 
 		ErrWithParse, s := connect.DeleteWordFromChat(newUpd.Message.Chat.ID, newUpd.Message.Text)
 
@@ -82,30 +77,24 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		msg.Text = s
 
 	case "addblacklist":
-		fmt.Println(newUpd.Message.Text)
 
 		var id = newUpd.Message.Chat.ID
 
 		var s string
 		s = strings.Trim(newUpd.Message.Text, "/addblacklist")
-		fmt.Println(s)
 
 		if len(s) >= 3 {
 			err := connect.AddWordToBlacklist(id, s)
-
-			//TODO - сюда нужна нормальная проверка на присуствие чата в базе данных, а не вот это постироничное сообщение
 			if err != nil {
-				log.Println(err)
 				msg.Text = "Что-то пошло не так. Проверьте, что ваш чат добавлен в нашу базу данных."
 			} else {
-				msg.Text = "Либо мы успешно добавили слова, либо ваш чат не в базе данных. 50/50"
+				msg.Text = "Мы успешно добавили слова."
 			}
 		} else {
 			msg.Text = "Чтобы бот не отвечал на практически все сообщения, нельзя банить слова меньше 3 букв. Ну изивните."
 		}
 
 	case "watchblacklist":
-		fmt.Println(newUpd.Message.Text)
 		allWords, errr := connect.GetAllBadWordsByChat(newUpd.Message.Chat.ID)
 
 		if errr != nil {
@@ -134,8 +123,6 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		} else {
 			msg.Text = "Либо мы успешно добавили слова, либо ваш чат не в базе данных. 50/50"
 		}
-
-		fmt.Println(newUpd.Message.Text)
 	case "guide":
 		msg.Text = "https://github.com/ice-wiz-test/tgcontextbot/blob/main/guide.md"
 		_, err := bot.Send(msg)
@@ -144,7 +131,6 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		}
 
 	case "setsubstitutewith":
-		fmt.Println(newUpd.Message.Text)
 
 		Err, answer := connect.AddWordToID(newUpd.Message.Text, newUpd.Message.Chat.ID)
 
@@ -188,10 +174,10 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 	for update := range updates {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 		if update.Message != nil {
+			//TODO - this should definitely be a separate function
 			t := time.Now().UnixNano()
 			elapsed := (t - start) / 1000000
 			dict[update.Message.From.ID]++
-			fmt.Println(dict[update.Message.From.ID])
 			if elapsed <= 5000 && dict[update.Message.From.ID] > 5 {
 				msg.Text = "You are spammer"
 				_, err := bot.Send(msg)
@@ -207,9 +193,9 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 				err := BotCommandHandle(update, bot)
 
 				if err != nil {
-					log.Panic(err)
+					log.Println(err)
 				}
-				// in the future this should probably return the error directly to the main program so that we can actually handle it
+				// at the moment, this simply logs all the errors we encounter during running. I do not yet see a better way of hadnling this
 			} else {
 
 				allWords, errr := connect.GetAllBadWordsByChat(update.Message.Chat.ID)
@@ -218,7 +204,6 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 					log.Println(errr)
 				} else {
 					if allWords == nil {
-						log.Println("This chat does not have any words")
 					} else {
 						if handle.CheckProf(allWords, update.Message.Text) {
 							msg.Text = "Вы сказали запрещенное слово, не надо так."
@@ -230,10 +215,10 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 						if err == nil {
 							err = handle.CheckMSG(firstptr, secondptr, update, bot)
 							if err != nil {
-								return err
+								log.Println(err)
 							}
 						} else {
-							return err
+							log.Println(err)
 						}
 					}
 				}
