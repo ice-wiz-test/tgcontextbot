@@ -29,6 +29,7 @@ func InitializeBot() (error, *tgbotapi.BotAPI) {
 
 //TODO - we should standarize handling errors inside the BotCommandHandle function
 func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+
 	msg := tgbotapi.NewMessage(newUpd.Message.Chat.ID, "")
 	switch newUpd.Message.Command() {
 	case "start":
@@ -51,17 +52,6 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 			msg.Text = str
 		}
-	case "addchat":
-
-		var ErrorWithHandlingNewChat error = nil
-		ErrorWithHandlingNewChat = handle.BotNewChatHandle(newUpd, bot)
-
-		if ErrorWithHandlingNewChat != nil {
-			return ErrorWithHandlingNewChat
-		}
-
-		return nil
-
 	case "getpairs":
 
 		firstptr, secondptr, ErrWithHandling, answer := connect.GetAllPairsFromChat(newUpd.Message.Chat.ID)
@@ -82,6 +72,26 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		} else {
 			msg.Text = "Пар нету"
 		}
+	case "getexcepted":
+		fmt.Println(newUpd.Message.Text)
+
+		firstptr, secondptr, ErrWithDB, _ := connect.GetExceptions(newUpd.Message.Chat.ID)
+
+		if ErrWithDB == nil {
+			if len(*firstptr) == 0 {
+				msg.Text = "В данном чате нет исключений."
+			} else {
+				for i := 0; i < len(*firstptr); i++ {
+					msg.Text += (*firstptr)[i]
+					msg.Text += " не действует на ->"
+					msg.Text += (*secondptr)[i]
+					msg.Text += "\n"
+				}
+			}
+		} else {
+			return ErrWithDB
+		}
+
 	case "deletesubstitute":
 
 		ErrWithParse, s := connect.DeleteWordFromChat(newUpd.Message.Chat.ID, newUpd.Message.Text)

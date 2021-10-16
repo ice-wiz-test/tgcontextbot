@@ -167,3 +167,35 @@ func DeleteExceptedWord(chat_id int64, excepted string, key string) (error, stri
 
 	return nil, "Успешно удален из списка исключений."
 }
+
+func GetExceptions(chat_id int64) (*[]string, *[]string, error, string) {
+	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
+	if err != nil {
+		return nil, nil, err, "Мы не сумели установить соединение с базой данных"
+	}
+	defer conn.Close(context.Background())
+
+	newRows, Err := conn.Query(context.Background(), "select phrase, id_of_excepted from exceptions where chat_id = $1", chat_id)
+	if Err != nil {
+		return nil, nil, Err, "На сервере произошла ошибка. Повторите запрос позже."
+	}
+	var str1 string
+	var str2 string
+
+	var ret1 []string
+	var ret2 []string
+
+	for newRows.Next() {
+		Err = newRows.Scan(&str1, &str2)
+
+		if Err != nil {
+			return nil, nil, Err, "На сервере произошла ошибка. Повторите запрос позже."
+		}
+
+		ret1 = append(ret1, str1)
+		ret2 = append(ret2, str2)
+	}
+
+	return &ret1, &ret2, nil, "Все успешно."
+
+}
