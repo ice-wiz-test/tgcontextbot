@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+//TODO - rewrite addwordtoblacklist
 func AddWordToBlacklist(idd int64, badWord string) error {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 
@@ -152,4 +153,70 @@ func DeleteWordFromBlacklist(idd int64, badWord string) error {
 	}
 
 	return nil
+}
+
+func AddExceptionToChat(idd int64, excepted string, badword string) (error, string) {
+	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
+
+	if err != nil {
+		return err, "Мы не сумели установить соединение с базой данных."
+	}
+
+	defer conn.Close(context.Background())
+
+	newRows, Err := conn.Query(context.Background(), "select autoinc_id from except_from_bad_words where bad_word = $1 and username = $2 and chat_id = $3", badword, excepted, idd)
+
+	var cnt int64
+
+	if Err != nil {
+		return Err, "Ошибка на сервере. Пожалуйста, попробуйте снова через некоторое время."
+	}
+
+	for newRows.Next() && cnt < 2 {
+		cnt++
+	}
+
+	if cnt != 0 {
+		return nil, "Уже добавлено."
+	}
+
+	_, Err = conn.Exec(context.Background(), "insert into except_from_bad_words (bad_word, username, chat_id) values($1, $2, $3)", badword, excepted, idd)
+
+	if Err != nil {
+		return Err, "Ошибка на сервере. Пожалуйста, попробуйте снова через некоторое время."
+	}
+
+	return nil, "Успешно добавили исключение в базу данных."
+
+}
+
+func GetExceptionsByUsername(idd int64, excepted string) (*[]string, error, string) {
+	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
+
+	if err != nil {
+		return nil, err, "Мы не сумели установить соединение с базой данных."
+	}
+
+	defer conn.Close(context.Background())
+
+	newRows, Err := conn.Query(context.Background(), "select bad_word from except_from_bad_words where username = $1 and chat_id = $2", excepted, idd)
+
+	if Err != nil {
+		return nil, Err, "Ошибка на сервере. Пожалуйста, повторите попытку позже."
+	}
+
+	var ret1 []string
+	var scn string
+
+	for newRows.Next() {
+		Err = newRows.Scan(&scn)
+
+		if Err != nil {
+			return nil, Err, "Ошибка на сервере. Пожалуйста, повторите попытку позже."
+		}
+
+		ret1 = append(ret1, scn)
+	}
+
+	return &ret1, nil, "Все успешно."
 }

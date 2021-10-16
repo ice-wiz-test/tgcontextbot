@@ -32,6 +32,22 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 	msg := tgbotapi.NewMessage(newUpd.Message.Chat.ID, "")
 	switch newUpd.Message.Command() {
+	case "addbadwordexception":
+		var s string = strings.TrimLeft(newUpd.Message.Text, "/addbadwordexception")
+		s = strings.TrimSpace(s)
+		var mass []string = strings.Split(s, "||")
+		if len(mass) != 3 {
+			msg.Text = "Неверный формат. Используйте формат excepted_phrase||excepted_username|| для таких запросов"
+		} else {
+			ErrWithDB, str := connect.AddExceptionToChat(newUpd.Message.Chat.ID, mass[1], mass[0])
+			if ErrWithDB != nil {
+				log.Println(ErrWithDB)
+
+			}
+
+			msg.Text = str
+		}
+
 	case "start":
 		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота: " +
 			"\n /addchat - позволяет добавлять бота в новый чат \n /addblacklist - позволяет добавлять слова, употребление которых в чате нежелательно " +
@@ -249,9 +265,25 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 				} else {
 					if allWords == nil {
 					} else {
-						if handle.CheckProf(allWords, update.Message.Text) {
-							msg.Text = "Вы сказали запрещенное слово, не надо так."
-							_, _ = bot.Send(msg)
+						strptr, err, _ := connect.GetExceptionsByUsername(update.Message.Chat.ID, update.Message.From.UserName)
+						ptr, Err := connect.GetAllBadWordsByChat(update.Message.Chat.ID)
+						if err == nil && Err == nil {
+							if handle.CheckProf(ptr, update.Message.Text, strptr) {
+								msg.Text = "Вы сказали запрещенное в данном чате слово."
+								_, err = bot.Send(msg)
+
+								if err != nil {
+									log.Println(err)
+								}
+							}
+						} else {
+							if err != nil {
+								log.Println(err)
+							}
+
+							if Err != nil {
+								log.Println(Err)
+							}
 						}
 
 						firstptr, secondptr, err, _ := connect.GetAllPairsFromChat(update.Message.Chat.ID)
