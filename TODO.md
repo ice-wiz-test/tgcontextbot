@@ -14,13 +14,16 @@
 
 7. Make actually readable commands - by storing the current moment at which we are in the chat.
 
-8. Adding exceptions to both banned words and excepted words (30% done, done for excepted words - lacks output to check who is excepted, lacks checking who has which phrase excepted by person).
+8. Adding exceptions to both banned words (done for substitute words).
 
-9. Rewrite all database functions to standard (error, string) format to make them easier to handle.
+9. Rewrite all database functions to standard (error, string) format to make them easier to handle. - done, also deleted non-needed functions.
 
 10. Add all of the possible commands to the Telegram menu
 
 11. At some point in the future, reorganize the code to make it actually readable.
 
+12. Make the anti-spam check a function instead of a pile of code inside the handler.
+
+13. Implement at least basic protection against SQL injections.
 
 
