@@ -27,31 +27,30 @@ func InitializeBot() (error, *tgbotapi.BotAPI) {
 
 }
 
-//TODO - we should standarize handling errors inside the BotCommandHandle function
 func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 	msg := tgbotapi.NewMessage(newUpd.Message.Chat.ID, "")
 	switch newUpd.Message.Command() {
 	case "getbadwordexceptions":
-		firstptr, secondptr, Err, txt := connect.GetAllExceptionsByChat(newUpd.Message.Chat.ID)
+		firstPointer, secondPointer, Err, txt := connect.GetAllExceptionsByChat(newUpd.Message.Chat.ID)
 		if Err != nil {
 			handle.HandleError(Err)
 		}
 		msg.Text += txt
 		msg.Text += "\nПары таковы - \n"
-		for i := 0; i < len(*firstptr); i++ {
-			msg.Text += (*firstptr)[i]
+		for i := 0; i < len(*firstPointer); i++ {
+			msg.Text += (*firstPointer)[i]
 			msg.Text += " -> "
-			msg.Text += (*secondptr)[i]
+			msg.Text += (*secondPointer)[i]
 			msg.Text += " (username) \n"
 		}
-		if len(*firstptr) == 0 {
+		if len(*firstPointer) == 0 {
 			msg.Text = "Пар нету!"
 		}
 	case "deletebadwordexception":
-		var s string = strings.TrimLeft(newUpd.Message.Text, "/deletebadwordexception")
+		var s = strings.TrimLeft(newUpd.Message.Text, "/deletebadwordexception")
 		s = strings.TrimSpace(s)
-		var mass []string = strings.Split(s, "||")
+		var mass = strings.Split(s, "||")
 		fmt.Println(mass[1], " \n", mass[0])
 		if len(mass) != 3 {
 			msg.Text = "Неверный формат. Используйте формат excepted_phrase||excepted_username|| для таких запросов"
@@ -65,9 +64,9 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			msg.Text = str
 		}
 	case "addbadwordexception":
-		var s string = strings.TrimLeft(newUpd.Message.Text, "/addbadwordexception")
+		var s = strings.TrimLeft(newUpd.Message.Text, "/addbadwordexception")
 		s = strings.TrimSpace(s)
-		var mass []string = strings.Split(s, "||")
+		var mass = strings.Split(s, "||")
 		if len(mass) != 3 {
 			msg.Text = "Неверный формат. Используйте формат excepted_phrase||excepted_username|| для таких запросов"
 		} else {
@@ -89,13 +88,13 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			"/addblacklist + слова - команда, добавляющая запрещенные слова в базу данных. После этого бот будет сообщать, если данное слово было употреблено\n" +
 			"/watchblacklist - команда, позволяющая просмотреть список запрещенных слов для данного чата\n" +
 			"/deletefromblacklist + слова - команда, позволяющая удалить выбранные запрещенные слова для данного чата\n" +
-			"/setsubstitutewit + слово + || + слово - команда, устанавливающая соответствие между двумя словами. В последствии если первое слово будет употреблено в чате бот вернет слово, с которым это соответствие было установлено. Для того чтобы бот работал корректно нужно ввести два слова и разделить их знаком '||'\n" +
+			"/setsubstitutewith + слово + || + слово - команда, устанавливающая соответствие между двумя словами. В последствии если первое слово будет употреблено в чате бот вернет слово, с которым это соответствие было установлено. Для того чтобы бот работал корректно нужно ввести два слова и разделить их знаком '||'\n" +
 			"/getpairs -  возвращает все слова когда-либо употребленные в чате, с которыми было установленно соответствие предыдущей командой"
 
 	case "addexceptiontosubstitute":
-		var s string = strings.TrimLeft(newUpd.Message.Text, "/addexceptiontosubstitute")
+		var s = strings.TrimLeft(newUpd.Message.Text, "/addexceptiontosubstitute")
 		s = strings.TrimSpace(s)
-		var mass []string = strings.Split(s, "||")
+		var mass = strings.Split(s, "||")
 		if len(mass) != 3 {
 			msg.Text = "Неверный формат. Используйте формат excepted_phrase||excepted_username|| для таких запросов"
 		} else {
@@ -108,19 +107,19 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		}
 	case "getpairs":
 
-		firstptr, secondptr, ErrWithHandling, answer := connect.GetAllPairsFromChat(newUpd.Message.Chat.ID)
+		firstPointer, secondPointer, ErrWithHandling, answer := connect.GetAllPairsFromChat(newUpd.Message.Chat.ID)
 
 		msg.Text = answer
 
 		if ErrWithHandling != nil {
 			handle.HandleError(ErrWithHandling)
 		}
-		if firstptr != nil && len(*firstptr) != 0 {
-			for i := 0; i < len(*firstptr); i++ {
+		if firstPointer != nil && len(*firstPointer) != 0 {
+			for i := 0; i < len(*firstPointer); i++ {
 				msg.Text += "\n"
-				msg.Text += (*firstptr)[i]
+				msg.Text += (*firstPointer)[i]
 				msg.Text += " -> "
-				msg.Text += (*secondptr)[i]
+				msg.Text += (*secondPointer)[i]
 			}
 		} else {
 			msg.Text = "Пар нету"
@@ -128,16 +127,16 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	case "getexcepted":
 		fmt.Println(newUpd.Message.Text)
 
-		firstptr, secondptr, ErrWithDB, _ := connect.GetExceptions(newUpd.Message.Chat.ID)
+		firstPointer, secondPointer, ErrWithDB, _ := connect.GetExceptions(newUpd.Message.Chat.ID)
 
 		if ErrWithDB == nil {
-			if len(*firstptr) == 0 {
+			if len(*firstPointer) == 0 {
 				msg.Text = "В данном чате нет исключений."
 			} else {
-				for i := 0; i < len(*firstptr); i++ {
-					msg.Text += (*firstptr)[i]
+				for i := 0; i < len(*firstPointer); i++ {
+					msg.Text += (*firstPointer)[i]
 					msg.Text += " не действует на ->"
-					msg.Text += (*secondptr)[i]
+					msg.Text += (*secondPointer)[i]
 					msg.Text += "\n"
 				}
 			}
@@ -170,14 +169,14 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 				msg.Text = "Мы успешно добавили слова."
 			}
 		} else {
-			msg.Text = "Чтобы бот не отвечал на практически все сообщения, нельзя банить слова меньше 3 букв. Ну изивните."
+			msg.Text = "Чтобы бот не отвечал на практически все сообщения, нельзя банить слова меньше 3 букв. Ну извините."
 		}
 
 	case "watchblacklist":
-		allWords, errr := connect.GetAllBadWordsByChat(newUpd.Message.Chat.ID)
+		allWords, Err := connect.GetAllBadWordsByChat(newUpd.Message.Chat.ID)
 
-		if errr != nil {
-			handle.HandleError(errr)
+		if Err != nil {
+			handle.HandleError(Err)
 		}
 
 		for i := 0; i < len(*allWords); i++ {
@@ -230,9 +229,9 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	case "deleteexception":
 
 		fmt.Println(newUpd.Message.Text)
-		var s string = strings.TrimLeft(newUpd.Message.Text, "/deletexcepetion")
+		var s = strings.TrimLeft(newUpd.Message.Text, "/deleteexception")
 		s = strings.TrimSpace(s)
-		var mass []string = strings.Split(s, "||")
+		var mass = strings.Split(s, "||")
 
 		if len(mass) != 3 {
 			msg.Text = "Неверный формат. Используйте формат excepted_phrase||excepted_username|| для таких запросов"
@@ -284,20 +283,19 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 				if err != nil {
 					handle.HandleError(err)
 				}
-				// at the moment, this simply logs all the errors we encounter during running. I do not yet see a better way of hadnling this
 			} else {
 
-				allWords, errr := connect.GetAllBadWordsByChat(update.Message.Chat.ID)
+				allWords, Err := connect.GetAllBadWordsByChat(update.Message.Chat.ID)
 
-				if errr != nil {
-					handle.HandleError(errr)
+				if Err != nil {
+					handle.HandleError(Err)
 				} else {
 					if allWords == nil {
 					} else {
-						strptr, err, _ := connect.GetExceptionsByUsername(update.Message.Chat.ID, update.Message.From.UserName)
+						stringPointer, err, _ := connect.GetExceptionsByUsername(update.Message.Chat.ID, update.Message.From.UserName)
 						ptr, Err := connect.GetAllBadWordsByChat(update.Message.Chat.ID)
 						if err == nil && Err == nil {
-							if handle.CheckProf(ptr, update.Message.Text, strptr) {
+							if handle.CheckProf(ptr, update.Message.Text, stringPointer) {
 								msg.Text = "Вы сказали запрещенное в данном чате слово."
 								_, err = bot.Send(msg)
 
@@ -315,12 +313,12 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 							}
 						}
 
-						firstptr, secondptr, err, _ := connect.GetAllPairsFromChat(update.Message.Chat.ID)
+						firstPointer, secondPointer, err, _ := connect.GetAllPairsFromChat(update.Message.Chat.ID)
 
 						exceptPTR, ErrWithParse, _ := connect.GetWordsByException(update.Message.Chat.ID, update.Message.From.UserName)
 
 						if err == nil && ErrWithParse == nil {
-							err = handle.CheckMSG(firstptr, secondptr, exceptPTR, update, bot)
+							err = handle.CheckMSG(firstPointer, secondPointer, exceptPTR, update, bot)
 						} else {
 							if err != nil {
 								handle.HandleError(err)

@@ -8,7 +8,6 @@ import (
 	handle "tgcontextbot/internal/handling"
 )
 
-//TODO - rewrite addwordtoblacklist
 func AddWordToBlacklist(idd int64, badWord string) error {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 
@@ -16,9 +15,14 @@ func AddWordToBlacklist(idd int64, badWord string) error {
 		handle.HandleError(err)
 	}
 
-	defer conn.Close(context.Background())
+	defer func(conn *db.Conn, ctx context.Context) {
+		err := conn.Close(ctx)
+		if err != nil {
+			handle.HandleError(err)
+		}
+	}(conn, context.Background())
 
-	var allBadWords []string = strings.Split(badWord, " ")
+	var allBadWords = strings.Split(badWord, " ")
 
 	var badWordByChat []string = nil
 
@@ -72,7 +76,12 @@ func GetAllBadWordsByChat(idd int64) (*[]string, error) {
 		return nil, err
 	}
 
-	defer conn.Close(context.Background())
+	defer func(conn *db.Conn, ctx context.Context) {
+		err := conn.Close(ctx)
+		if err != nil {
+			handle.HandleError(err)
+		}
+	}(conn, context.Background())
 
 	newRows, Err := conn.Query(context.Background(), "select badword from added_to_chats where id = $1", idd)
 
@@ -112,9 +121,14 @@ func DeleteWordFromBlacklist(idd int64, badWord string) error {
 		handle.HandleError(err)
 	}
 
-	defer conn.Close(context.Background())
+	defer func(conn *db.Conn, ctx context.Context) {
+		err := conn.Close(ctx)
+		if err != nil {
+			handle.HandleError(err)
+		}
+	}(conn, context.Background())
 
-	var allBadWords []string = strings.Split(badWord, " ")
+	var allBadWords = strings.Split(badWord, " ")
 
 	var badWordByChat []string = nil
 
@@ -168,7 +182,12 @@ func AddExceptionToChat(idd int64, excepted string, badword string) (error, stri
 		return err, "Мы не сумели установить соединение с базой данных."
 	}
 
-	defer conn.Close(context.Background())
+	defer func(conn *db.Conn, ctx context.Context) {
+		err := conn.Close(ctx)
+		if err != nil {
+			handle.HandleError(err)
+		}
+	}(conn, context.Background())
 
 	newRows, Err := conn.Query(context.Background(), "select autoinc_id from except_from_bad_words where bad_word = $1 and username = $2 and chat_id = $3", badword, excepted, idd)
 
@@ -204,7 +223,12 @@ func GetExceptionsByUsername(idd int64, excepted string) (*[]string, error, stri
 		return nil, err, "Мы не сумели установить соединение с базой данных."
 	}
 
-	defer conn.Close(context.Background())
+	defer func(conn *db.Conn, ctx context.Context) {
+		err := conn.Close(ctx)
+		if err != nil {
+			handle.HandleError(err)
+		}
+	}(conn, context.Background())
 
 	newRows, Err := conn.Query(context.Background(), "select bad_word from except_from_bad_words where username = $1 and chat_id = $2", excepted, idd)
 
@@ -237,7 +261,12 @@ func GetAllExceptionsByChat(idd int64) (*[]string, *[]string, error, string) {
 		return nil, nil, err, "Мы не сумели установить соединение с базой данных."
 	}
 
-	defer conn.Close(context.Background())
+	defer func(conn *db.Conn, ctx context.Context) {
+		err := conn.Close(ctx)
+		if err != nil {
+			handle.HandleError(err)
+		}
+	}(conn, context.Background())
 
 	newRows, Err := conn.Query(context.Background(), "select bad_word, username from except_from_bad_words where chat_id = $1", idd)
 
@@ -247,8 +276,8 @@ func GetAllExceptionsByChat(idd int64) (*[]string, *[]string, error, string) {
 
 	var ret1 []string = nil
 	var ret2 []string = nil
-	var scn1 string = ""
-	var scn2 string = ""
+	var scn1 = ""
+	var scn2 = ""
 
 	for newRows.Next() {
 		Err = newRows.Scan(&scn1, &scn2)

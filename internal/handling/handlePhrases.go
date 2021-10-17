@@ -5,11 +5,11 @@ import (
 	"strings"
 )
 
-func CheckMSG(firstPair *[]string, secondPair *[]string, listOfExcep *[]string, newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+func CheckMSG(firstPair *[]string, secondPair *[]string, listOfExceptions *[]string, newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	for i := 0; i < len(*firstPair); i++ {
 		var h int64 = 0
-		for j := 0; j < len(*listOfExcep); j++ {
-			if (*firstPair)[i] == (*listOfExcep)[j] {
+		for j := 0; j < len(*listOfExceptions); j++ {
+			if (*firstPair)[i] == (*listOfExceptions)[j] {
 				h++
 			}
 		}

@@ -7,9 +7,9 @@ import (
 	handle "tgcontextbot/internal/handling"
 )
 
-func AddWordToID(keystring string, idd int64) (error, string) {
+func AddWordToID(keyString string, idd int64) (error, string) {
 	var s string
-	s = strings.Trim(keystring, "/setsubstitutewith ")
+	s = strings.Trim(keyString, "/setsubstitutewith ")
 	s = strings.TrimSpace(s)
 	var allString []string
 
@@ -29,7 +29,12 @@ func AddWordToID(keystring string, idd int64) (error, string) {
 		handle.HandleError(err)
 		return err, "Ошибка при соединении с базой данных"
 	}
-	defer conn.Close(context.Background())
+	defer func(conn *db.Conn, ctx context.Context) {
+		err := conn.Close(ctx)
+		if err != nil {
+			handle.HandleError(err)
+		}
+	}(conn, context.Background())
 
 	newRows, Err := conn.Query(context.Background(), "select replace_phrase from chat_phrases where chat_id = $1 and find_phrase = $2", idd, first)
 
@@ -65,7 +70,12 @@ func GetAllPairsFromChat(idd int64) (*[]string, *[]string, error, string) {
 		handle.HandleError(err)
 		return nil, nil, err, "Мы не сумели установить соединение с базой данных"
 	}
-	defer conn.Close(context.Background())
+	defer func(conn *db.Conn, ctx context.Context) {
+		err := conn.Close(ctx)
+		if err != nil {
+			handle.HandleError(err)
+		}
+	}(conn, context.Background())
 	newRows, err := conn.Query(context.Background(), "select find_phrase, replace_phrase from chat_phrases where chat_id = $1", idd)
 	var firstPair []string = nil
 	var secondPair []string = nil
@@ -94,12 +104,17 @@ func GetAllPairsFromChat(idd int64) (*[]string, *[]string, error, string) {
 
 func DeleteWordFromChat(idd int64, key string) (error, string) {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
-	var s string = strings.TrimLeft(key, "/deletesubstitute")
+	var s = strings.TrimLeft(key, "/deletesubstitute")
 	s = strings.TrimSpace(s)
 	if err != nil {
 		return err, "Мы не сумели установить соединение с базой данных"
 	}
-	defer conn.Close(context.Background())
+	defer func(conn *db.Conn, ctx context.Context) {
+		err := conn.Close(ctx)
+		if err != nil {
+			handle.HandleError(err)
+		}
+	}(conn, context.Background())
 
 	_, err = conn.Exec(context.Background(), "delete from chat_phrases where chat_id = $1 and find_phrase = $2", idd, s)
 
@@ -111,15 +126,20 @@ func DeleteWordFromChat(idd int64, key string) (error, string) {
 	}
 }
 
-func AddException(chat_id int64, key string, excepted string) (error, string) {
+func AddException(chatId int64, key string, excepted string) (error, string) {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 	if err != nil {
 		handle.HandleError(err)
 		return err, "Мы не сумели установить соединение с базой данных"
 	}
-	defer conn.Close(context.Background())
+	defer func(conn *db.Conn, ctx context.Context) {
+		err := conn.Close(ctx)
+		if err != nil {
+			handle.HandleError(err)
+		}
+	}(conn, context.Background())
 
-	rows, err := conn.Query(context.Background(), "select autoinc_id where phrase = $1 and id_of_excepted = $2 and chat_id= $3", key, excepted, chat_id)
+	rows, err := conn.Query(context.Background(), "select autoinc_id where phrase = $1 and id_of_excepted = $2 and chat_id= $3", key, excepted, chatId)
 	var cnt int64
 	for rows.Next() && cnt <= 2 {
 		cnt++
@@ -128,7 +148,7 @@ func AddException(chat_id int64, key string, excepted string) (error, string) {
 		return nil, "Уже добавлен в исключения."
 	}
 
-	_, err = conn.Exec(context.Background(), "insert into exceptions (phrase, id_of_excepted, chat_id) values ($1, $2, $3)", key, excepted, chat_id)
+	_, err = conn.Exec(context.Background(), "insert into exceptions (phrase, id_of_excepted, chat_id) values ($1, $2, $3)", key, excepted, chatId)
 
 	if err != nil {
 		handle.HandleError(err)
@@ -139,15 +159,20 @@ func AddException(chat_id int64, key string, excepted string) (error, string) {
 
 }
 
-func GetWordsByException(chat_id int64, excepted string) (*[]string, error, string) {
+func GetWordsByException(chatId int64, excepted string) (*[]string, error, string) {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 	if err != nil {
 		handle.HandleError(err)
 		return nil, err, "Мы не сумели установить соединение с базой данных"
 	}
-	defer conn.Close(context.Background())
+	defer func(conn *db.Conn, ctx context.Context) {
+		err := conn.Close(ctx)
+		if err != nil {
+			handle.HandleError(err)
+		}
+	}(conn, context.Background())
 
-	newRows, err := conn.Query(context.Background(), "select phrase from exceptions where chat_id = $1 and id_of_excepted = $2", chat_id, excepted)
+	newRows, err := conn.Query(context.Background(), "select phrase from exceptions where chat_id = $1 and id_of_excepted = $2", chatId, excepted)
 
 	var ret []string
 
@@ -164,14 +189,19 @@ func GetWordsByException(chat_id int64, excepted string) (*[]string, error, stri
 	return &ret, nil, "Вот ваш список"
 }
 
-func DeleteExceptedWord(chat_id int64, excepted string, key string) (error, string) {
+func DeleteExceptedWord(chatId int64, excepted string, key string) (error, string) {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 	if err != nil {
 		return err, "Мы не сумели установить соединение с базой данных"
 	}
-	defer conn.Close(context.Background())
+	defer func(conn *db.Conn, ctx context.Context) {
+		err := conn.Close(ctx)
+		if err != nil {
+			handle.HandleError(err)
+		}
+	}(conn, context.Background())
 
-	_, ErrWithDel := conn.Exec(context.Background(), "delete from exceptions where chat_id = $1 and phrase = $2 and id_of_excepted = $3", chat_id, key, excepted)
+	_, ErrWithDel := conn.Exec(context.Background(), "delete from exceptions where chat_id = $1 and phrase = $2 and id_of_excepted = $3", chatId, key, excepted)
 
 	if ErrWithDel != nil {
 		handle.HandleError(ErrWithDel)
@@ -181,15 +211,20 @@ func DeleteExceptedWord(chat_id int64, excepted string, key string) (error, stri
 	return nil, "Успешно удален из списка исключений."
 }
 
-func GetExceptions(chat_id int64) (*[]string, *[]string, error, string) {
+func GetExceptions(chatId int64) (*[]string, *[]string, error, string) {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 	if err != nil {
 		handle.HandleError(err)
 		return nil, nil, err, "Мы не сумели установить соединение с базой данных"
 	}
-	defer conn.Close(context.Background())
+	defer func(conn *db.Conn, ctx context.Context) {
+		err := conn.Close(ctx)
+		if err != nil {
+			handle.HandleError(err)
+		}
+	}(conn, context.Background())
 
-	newRows, Err := conn.Query(context.Background(), "select phrase, id_of_excepted from exceptions where chat_id = $1", chat_id)
+	newRows, Err := conn.Query(context.Background(), "select phrase, id_of_excepted from exceptions where chat_id = $1", chatId)
 	if Err != nil {
 		handle.HandleError(Err)
 		return nil, nil, Err, "На сервере произошла ошибка. Повторите запрос позже."
