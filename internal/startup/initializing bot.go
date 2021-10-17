@@ -245,7 +245,7 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 		if update.Message != nil {
 			err := handle.FindSpammer(bot, start, &dict, update.Message.From.ID, msg)
 			if err != nil {
-				return err
+				log.Println(err)
 			}
 			if update.Message.IsCommand() {
 
