@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	db "github.com/jackc/pgx/v4"
 	"strings"
 	handle "tgcontextbot/internal/handling"
@@ -227,4 +228,68 @@ func GetExceptionsByUsername(idd int64, excepted string) (*[]string, error, stri
 	}
 
 	return &ret1, nil, "Все успешно."
+}
+
+func GetAllExceptionsByChat(idd int64) (*[]string, *[]string, error, string) {
+	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
+
+	if err != nil {
+		return nil, nil, err, "Мы не сумели установить соединение с базой данных."
+	}
+
+	defer conn.Close(context.Background())
+
+	newRows, Err := conn.Query(context.Background(), "select bad_word, username from except_from_bad_words where chat_id = $1", idd)
+
+	if Err != nil {
+		return nil, nil, Err, "На сервере произошла ошибка. Пожалуйста, попробуйте снова через некоторое время."
+	}
+
+	var ret1 []string = nil
+	var ret2 []string = nil
+	var scn1 string = ""
+	var scn2 string = ""
+
+	for newRows.Next() {
+		Err = newRows.Scan(&scn1, &scn2)
+		if Err != nil {
+			return nil, nil, Err, "Произошла ошибка при работе с базой данных."
+		}
+		ret1 = append(ret1, scn1)
+		ret2 = append(ret2, scn2)
+	}
+
+	return &ret1, &ret2, nil, "Все успешно."
+}
+
+func DeleteExceptionFromChat(idd int64, excepted string, badword string) (error, string) {
+	fmt.Println(excepted, "\n", badword)
+	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
+
+	if err != nil {
+		handle.HandleError(err)
+		return err, "Мы не сумели установить соединение с базой данных."
+	}
+
+	newRows, Err := conn.Query(context.Background(), "select autoinc_id from except_from_bad_words where bad_word = $1 and username = $2 and chat_id = $3", badword, excepted, idd)
+
+	if Err != nil {
+		return Err, "Ошибка на сервере. Пожалуйста, попробуйте снова через некоторое время."
+	}
+
+	var cnt int64 = 0
+	for newRows.Next() && cnt < 2 {
+		cnt++
+	}
+	if cnt == 0 {
+		return nil, "Такого исключения не существует!"
+	}
+
+	_, Err = conn.Exec(context.Background(), "delete from except_from_bad_words where bad_word = $1 and username = $2 and chat_id = $3", badword, excepted, idd)
+
+	if Err != nil {
+		return Err, "Ошибка на сервере. Пожалуйста, попробуйте снова через некоторое время."
+	}
+
+	return nil, "Все успешно."
 }

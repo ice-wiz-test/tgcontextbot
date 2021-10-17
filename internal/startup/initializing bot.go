@@ -32,6 +32,38 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 	msg := tgbotapi.NewMessage(newUpd.Message.Chat.ID, "")
 	switch newUpd.Message.Command() {
+	case "getbadwordexceptions":
+		firstptr, secondptr, Err, txt := connect.GetAllExceptionsByChat(newUpd.Message.Chat.ID)
+		if Err != nil {
+			handle.HandleError(Err)
+		}
+		msg.Text += txt
+		msg.Text += "\nПары таковы - \n"
+		for i := 0; i < len(*firstptr); i++ {
+			msg.Text += (*firstptr)[i]
+			msg.Text += " -> "
+			msg.Text += (*secondptr)[i]
+			msg.Text += " (username) \n"
+		}
+		if len(*firstptr) == 0 {
+			msg.Text = "Пар нету!"
+		}
+	case "deletebadwordexception":
+		var s string = strings.TrimLeft(newUpd.Message.Text, "/deletebadwordexception")
+		s = strings.TrimSpace(s)
+		var mass []string = strings.Split(s, "||")
+		fmt.Println(mass[1], " \n", mass[0])
+		if len(mass) != 3 {
+			msg.Text = "Неверный формат. Используйте формат excepted_phrase||excepted_username|| для таких запросов"
+		} else {
+			ErrWithDB, str := connect.DeleteExceptionFromChat(newUpd.Message.Chat.ID, mass[1], mass[0])
+			if ErrWithDB != nil {
+				handle.HandleError(ErrWithDB)
+
+			}
+
+			msg.Text = str
+		}
 	case "addbadwordexception":
 		var s string = strings.TrimLeft(newUpd.Message.Text, "/addbadwordexception")
 		s = strings.TrimSpace(s)
