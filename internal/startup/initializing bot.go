@@ -243,7 +243,7 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 	for update := range updates {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 		if update.Message != nil {
-			err := handle.FindSpammer(bot, start, &dict, &update, msg)
+			err := handle.FindSpammer(bot, start, &dict, update.Message.From.ID, msg)
 			if err != nil {
 				return err
 			}

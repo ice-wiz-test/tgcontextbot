@@ -5,11 +5,11 @@ import (
 	"time"
 )
 
-func FindSpammer(bot *tgbotapi.BotAPI, start int64, dict *map[int]int, update *tgbotapi.Update, msg tgbotapi.MessageConfig) error {
+func FindSpammer(bot *tgbotapi.BotAPI, start int64, dict *map[int]int, id int, msg tgbotapi.MessageConfig) error {
 	t := time.Now().UnixNano()
 	elapsed := (t - start) / 1000000
-	(*dict)[update.Message.From.ID]++
-	if elapsed <= 5000 && (*dict)[update.Message.From.ID] > 5 {
+	(*dict)[id]++
+	if elapsed <= 5000 && (*dict)[id] > 5 {
 		msg.Text = "You are spammer"
 		_, err := bot.Send(msg)
 		if err != nil {
