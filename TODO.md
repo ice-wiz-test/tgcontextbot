@@ -1,6 +1,6 @@
 
 
-1. Add normal error handling to the ServeBot function. - 10% done
+1. Add normal error handling to the ServeBot function. - done
 
 2. Delete non-needed debug lines - done.
 
@@ -8,7 +8,7 @@
 
 4. Instead of logging errors into the console, we could try setting up an email and sending them directly there - that way, we will be able to get on top of it faster. - done, needs to rewrite all previous error handlers
 
-5. Standardize error handling.
+5. Standardize error handling. - done.
 
 6. The guide for users should not be on our GitHub repository, seeing as it also stores out bottoken.txt and the password for accessing the database.
 
