@@ -26,4 +26,10 @@
 
 13. Implement at least basic protection against SQL injections.
 
+14. Add actions(ban, warning) for bad words.
+
+15. Add check for admin(only admin can use bot).
+
+16. After point 15 write command to add bot user role.
+
 
