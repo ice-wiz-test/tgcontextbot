@@ -82,7 +82,6 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 		if ErrWithHandling != nil {
 			handle.HandleError(ErrWithHandling)
-			return ErrWithHandling
 		}
 		if firstptr != nil && len(*firstptr) != 0 {
 			for i := 0; i < len(*firstptr); i++ {
@@ -111,7 +110,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 				}
 			}
 		} else {
-			return ErrWithDB
+			handle.HandleError(ErrWithDB)
 		}
 
 	case "deletesubstitute":
@@ -193,7 +192,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			"/addblacklist + слова - команда, добавляющая запрещенные слова в базу данных. После этого бот будет сообщать, если данное слово было употреблено\n" +
 			"/watchblacklist - команда, позволяющая просмотреть список запрещенных слов для данного чата\n" +
 			"/deletefromblacklist + слова - команда, позволяющая удалить выбранные запрещенные слова для данного чата\n" +
-			"/setsubstitutewit + слово + || + слово - команда, устанавливающая соответствие между двумя словами. В последствии если первое слово будет употреблено в чате бот вернет слово, с которым это соответствие было установлено. Для того чтобы бот работал корректно нужно ввести два слова и разделить их знаком '||'\n" +
+			"/setsubstitutewith + слово + || + слово - команда, устанавливающая соответствие между двумя словами. В последствии если первое слово будет употреблено в чате бот вернет слово, с которым это соответствие было установлено. Для того чтобы бот работал корректно нужно ввести два слова и разделить их знаком '||'\n" +
 			"/getpairs -  возвращает все слова когда-либо употребленные в чате, с которыми было установленно соответствие предыдущей командой"
 
 	case "deleteexception":
