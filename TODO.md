@@ -14,7 +14,7 @@
 
 7. Make actually readable commands - by storing the current moment at which we are in the chat.
 
-8. Adding exceptions to both banned words (done for substitute words).
+8. Adding exceptions to both banned words (done for substitute words) - fully done.
 
 9. Rewrite all database functions to standard (error, string) format to make them easier to handle. - done, also deleted non-needed functions.
 
