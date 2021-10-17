@@ -41,7 +41,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		} else {
 			ErrWithDB, str := connect.AddExceptionToChat(newUpd.Message.Chat.ID, mass[1], mass[0])
 			if ErrWithDB != nil {
-				log.Println(ErrWithDB)
+				handle.HandleError(ErrWithDB)
 
 			}
 
@@ -69,8 +69,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		} else {
 			ErrWithDB, str := connect.AddException(newUpd.Message.Chat.ID, mass[0], mass[1])
 			if ErrWithDB != nil {
-				log.Println(ErrWithDB)
-
+				handle.HandleError(ErrWithDB)
 			}
 
 			msg.Text = str
@@ -82,7 +81,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		msg.Text = answer
 
 		if ErrWithHandling != nil {
-			log.Println(ErrWithHandling)
+			handle.HandleError(ErrWithHandling)
 			return ErrWithHandling
 		}
 		if firstptr != nil && len(*firstptr) != 0 {
@@ -120,7 +119,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		ErrWithParse, s := connect.DeleteWordFromChat(newUpd.Message.Chat.ID, newUpd.Message.Text)
 
 		if ErrWithParse != nil {
-			log.Println(ErrWithParse)
+			handle.HandleError(ErrWithParse)
 		}
 
 		msg.Text = s
@@ -147,7 +146,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		allWords, errr := connect.GetAllBadWordsByChat(newUpd.Message.Chat.ID)
 
 		if errr != nil {
-			return errr
+			handle.HandleError(errr)
 		}
 
 		for i := 0; i < len(*allWords); i++ {
@@ -167,7 +166,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		err := connect.DeleteWordFromBlacklist(id, s)
 
 		if err != nil {
-			log.Println(err)
+			handle.HandleError(err)
 			msg.Text = "Что-то пошло не так. Проверьте, что ваш чат добавлен в нашу базу данных."
 		} else {
 			msg.Text = "Либо мы успешно добавили слова, либо ваш чат не в базе данных. 50/50"
@@ -180,7 +179,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		Err, answer := connect.AddWordToID(newUpd.Message.Text, newUpd.Message.Chat.ID)
 
 		if Err != nil {
-			return Err
+			handle.HandleError(Err)
 		}
 
 		msg.Text = answer
@@ -198,6 +197,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			"/getpairs -  возвращает все слова когда-либо употребленные в чате, с которыми было установленно соответствие предыдущей командой"
 
 	case "deleteexception":
+
 		fmt.Println(newUpd.Message.Text)
 		var s string = strings.TrimLeft(newUpd.Message.Text, "/deletexcepetion")
 		s = strings.TrimSpace(s)
@@ -208,8 +208,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		} else {
 			ErrWithDB, str := connect.DeleteExceptedWord(newUpd.Message.Chat.ID, mass[1], mass[0])
 			if ErrWithDB != nil {
-				log.Println(ErrWithDB)
-
+				handle.HandleError(ErrWithDB)
 			}
 
 			msg.Text = str
@@ -224,7 +223,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	_, err := bot.Send(msg)
 
 	if err != nil {
-		return err
+		handle.HandleError(err)
 	}
 
 	return nil
@@ -245,14 +244,14 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 		if update.Message != nil {
 			err := handle.FindSpammer(bot, start, &dict, update.Message.From.ID, msg)
 			if err != nil {
-				log.Println(err)
+				handle.HandleError(err)
 			}
 			if update.Message.IsCommand() {
 
 				err := BotCommandHandle(update, bot)
 
 				if err != nil {
-					log.Println(err)
+					handle.HandleError(err)
 				}
 				// at the moment, this simply logs all the errors we encounter during running. I do not yet see a better way of hadnling this
 			} else {
@@ -260,7 +259,7 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 				allWords, errr := connect.GetAllBadWordsByChat(update.Message.Chat.ID)
 
 				if errr != nil {
-					log.Println(errr)
+					handle.HandleError(errr)
 				} else {
 					if allWords == nil {
 					} else {
@@ -272,16 +271,16 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 								_, err = bot.Send(msg)
 
 								if err != nil {
-									log.Println(err)
+									handle.HandleError(err)
 								}
 							}
 						} else {
 							if err != nil {
-								log.Println(err)
+								handle.HandleError(err)
 							}
 
 							if Err != nil {
-								log.Println(Err)
+								handle.HandleError(Err)
 							}
 						}
 
@@ -293,11 +292,11 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 							err = handle.CheckMSG(firstptr, secondptr, exceptPTR, update, bot)
 						} else {
 							if err != nil {
-								log.Println(err)
+								handle.HandleError(err)
 							}
 
 							if ErrWithParse != nil {
-								log.Println(ErrWithParse)
+								handle.HandleError(ErrWithParse)
 							}
 						}
 					}

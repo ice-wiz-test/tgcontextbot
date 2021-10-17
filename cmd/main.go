@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	handle "tgcontextbot/internal/handling"
 	start "tgcontextbot/internal/startup"
 )
 
@@ -29,6 +30,7 @@ func main() {
 
 	if err != nil {
 		fmt.Println("Unable to start up, terminating.")
+		handle.HandleError(err)
 		return
 	}
 
@@ -36,6 +38,7 @@ func main() {
 
 	errr := start.ServeBot(bot)
 	if errr != nil {
+		handle.HandleError(errr)
 		return
 	}
 

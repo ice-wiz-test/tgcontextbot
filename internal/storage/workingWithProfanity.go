@@ -4,6 +4,7 @@ import (
 	"context"
 	db "github.com/jackc/pgx/v4"
 	"strings"
+	handle "tgcontextbot/internal/handling"
 )
 
 //TODO - rewrite addwordtoblacklist
@@ -11,7 +12,7 @@ func AddWordToBlacklist(idd int64, badWord string) error {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 
 	if err != nil {
-		return err
+		handle.HandleError(err)
 	}
 
 	defer conn.Close(context.Background())
@@ -34,14 +35,14 @@ func AddWordToBlacklist(idd int64, badWord string) error {
 		var txt string
 		errWithParse := newRows.Scan(&txt)
 		if errWithParse != nil {
-			return errWithParse
+			handle.HandleError(errWithParse)
 		}
 		badWordByChat = append(badWordByChat, txt)
 	}
 
-	var flag bool = false
-	var i int = 0
-	var j int = 0
+	var flag = false
+	var i = 0
+	var j = 0
 	for i = 0; i < len(allBadWords); i++ {
 		flag = false
 		for j = 0; j < len(badWordByChat); j++ {
@@ -54,7 +55,7 @@ func AddWordToBlacklist(idd int64, badWord string) error {
 			_, err = conn.Exec(context.Background(), "insert into added_to_chats (id, badword) values ($1, $2)", idd, allBadWords[i])
 
 			if err != nil {
-				return err
+				handle.HandleError(err)
 			}
 		}
 	}
@@ -66,6 +67,7 @@ func GetAllBadWordsByChat(idd int64) (*[]string, error) {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 
 	if err != nil {
+		handle.HandleError(err)
 		return nil, err
 	}
 
@@ -74,6 +76,7 @@ func GetAllBadWordsByChat(idd int64) (*[]string, error) {
 	newRows, Err := conn.Query(context.Background(), "select badword from added_to_chats where id = $1", idd)
 
 	if Err != nil {
+		handle.HandleError(Err)
 		return nil, Err
 	}
 
@@ -89,6 +92,7 @@ func GetAllBadWordsByChat(idd int64) (*[]string, error) {
 		errWithParse := newRows.Scan(&txt)
 
 		if errWithParse != nil {
+			handle.HandleError(errWithParse)
 			return nil, errWithParse
 		}
 
@@ -104,7 +108,7 @@ func DeleteWordFromBlacklist(idd int64, badWord string) error {
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 
 	if err != nil {
-		return err
+		handle.HandleError(err)
 	}
 
 	defer conn.Close(context.Background())
@@ -116,7 +120,7 @@ func DeleteWordFromBlacklist(idd int64, badWord string) error {
 	newRows, Err := conn.Query(context.Background(), "select badword from added_to_chats where id = $1", idd)
 
 	if Err != nil {
-		return Err
+		handle.HandleError(Err)
 	}
 
 	if newRows == nil {
@@ -147,7 +151,7 @@ func DeleteWordFromBlacklist(idd int64, badWord string) error {
 			_, err = conn.Exec(context.Background(), "delete from added_to_chats where id = $1 and badword = $2", idd, allBadWords[i])
 
 			if err != nil {
-				return err
+				handle.HandleError(err)
 			}
 		}
 	}
@@ -159,6 +163,7 @@ func AddExceptionToChat(idd int64, excepted string, badword string) (error, stri
 	conn, err := db.Connect(context.Background(), "postgres://postgres:password@localhost:5432/test")
 
 	if err != nil {
+		handle.HandleError(err)
 		return err, "Мы не сумели установить соединение с базой данных."
 	}
 
@@ -169,6 +174,7 @@ func AddExceptionToChat(idd int64, excepted string, badword string) (error, stri
 	var cnt int64
 
 	if Err != nil {
+		handle.HandleError(Err)
 		return Err, "Ошибка на сервере. Пожалуйста, попробуйте снова через некоторое время."
 	}
 
@@ -202,6 +208,7 @@ func GetExceptionsByUsername(idd int64, excepted string) (*[]string, error, stri
 	newRows, Err := conn.Query(context.Background(), "select bad_word from except_from_bad_words where username = $1 and chat_id = $2", excepted, idd)
 
 	if Err != nil {
+		handle.HandleError(Err)
 		return nil, Err, "Ошибка на сервере. Пожалуйста, повторите попытку позже."
 	}
 
@@ -212,6 +219,7 @@ func GetExceptionsByUsername(idd int64, excepted string) (*[]string, error, stri
 		Err = newRows.Scan(&scn)
 
 		if Err != nil {
+			handle.HandleError(Err)
 			return nil, Err, "Ошибка на сервере. Пожалуйста, повторите попытку позже."
 		}
 

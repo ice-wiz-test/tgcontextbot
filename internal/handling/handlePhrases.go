@@ -20,7 +20,7 @@ func CheckMSG(firstPair *[]string, secondPair *[]string, listOfExcep *[]string, 
 
 				_, err := bot.Send(msg)
 				if err != nil {
-					return err
+					HandleError(err)
 				}
 			}
 		}

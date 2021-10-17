@@ -13,7 +13,7 @@ func FindSpammer(bot *tgbotapi.BotAPI, start int64, dict *map[int]int, id int, m
 		msg.Text = "You are spammer"
 		_, err := bot.Send(msg)
 		if err != nil {
-			return err
+			HandleError(err)
 		}
 	} else if elapsed >= 5000 {
 		start = time.Now().UnixNano()
