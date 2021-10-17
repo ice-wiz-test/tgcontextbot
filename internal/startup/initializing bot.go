@@ -49,10 +49,17 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		}
 
 	case "start":
-		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота: " +
-			"\n /addchat - позволяет добавлять бота в новый чат \n /addblacklist - позволяет добавлять слова, употребление которых в чате нежелательно " +
-			"\n /watchblacklist - позволяет просматривать добавленные в черный список слдова " +
-			"\n /help - позволяет получить помощь"
+		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота: \n" +
+			"/start - команда, запускающая бота, выдает список доступных команд \n" +
+			"/help - команда, выдающая список доступных команд\n" +
+			"/guide - команда, возвращающая ссылку на гайд\n" +
+			"/addchat + ID чата - команда, позволяющая добавить чат в базу данных. Нужна, чтобы бот запомнил фильтр запрещенных слов в данном чате.\n" +
+			"/addblacklist + слова - команда, добавляющая запрещенные слова в базу данных. После этого бот будет сообщать, если данное слово было употреблено\n" +
+			"/watchblacklist - команда, позволяющая просмотреть список запрещенных слов для данного чата\n" +
+			"/deletefromblacklist + слова - команда, позволяющая удалить выбранные запрещенные слова для данного чата\n" +
+			"/setsubstitutewit + слово + || + слово - команда, устанавливающая соответствие между двумя словами. В последствии если первое слово будет употреблено в чате бот вернет слово, с которым это соответствие было установлено. Для того чтобы бот работал корректно нужно ввести два слова и разделить их знаком '||'\n" +
+			"/getpairs -  возвращает все слова когда-либо употребленные в чате, с которыми было установленно соответствие предыдущей командой"
+
 	case "addexceptiontosubstitute":
 		var s string = strings.TrimLeft(newUpd.Message.Text, "/addexceptiontosubstitute")
 		s = strings.TrimSpace(s)
@@ -167,10 +174,6 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		}
 	case "guide":
 		msg.Text = "https://github.com/ice-wiz-test/tgcontextbot/blob/main/guide.md"
-		_, err := bot.Send(msg)
-		if err != nil {
-			return err
-		}
 
 	case "setsubstitutewith":
 
@@ -183,11 +186,17 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		msg.Text = answer
 
 	case "help":
-		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота: " +
-			"\n /addchat - позволяет добавлять бота в новый чат " +
-			"\n /addblacklist - позволяет добавлять слова, употребление которых в чате нежелательно " +
-			"\n /watchblacklist - позволяет просматривать добавленные в черный список слдова" +
-			"\n /help - позволяет получить помощь"
+		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота: \n" +
+			"/start - команда, запускающая бота, выдает список доступных команд \n" +
+			"/help - команда, выдающая список доступных команд\n" +
+			"/guide - команда, возвращающая ссылку на гайд\n" +
+			"/addchat + ID чата - команда, позволяющая добавить чат в базу данных. Нужна, чтобы бот запомнил фильтр запрещенных слов в данном чате.\n" +
+			"/addblacklist + слова - команда, добавляющая запрещенные слова в базу данных. После этого бот будет сообщать, если данное слово было употреблено\n" +
+			"/watchblacklist - команда, позволяющая просмотреть список запрещенных слов для данного чата\n" +
+			"/deletefromblacklist + слова - команда, позволяющая удалить выбранные запрещенные слова для данного чата\n" +
+			"/setsubstitutewit + слово + || + слово - команда, устанавливающая соответствие между двумя словами. В последствии если первое слово будет употреблено в чате бот вернет слово, с которым это соответствие было установлено. Для того чтобы бот работал корректно нужно ввести два слова и разделить их знаком '||'\n" +
+			"/getpairs -  возвращает все слова когда-либо употребленные в чате, с которыми было установленно соответствие предыдущей командой"
+
 	case "deleteexception":
 		fmt.Println(newUpd.Message.Text)
 		var s string = strings.TrimLeft(newUpd.Message.Text, "/deletexcepetion")
@@ -234,19 +243,9 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 	for update := range updates {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 		if update.Message != nil {
-			//TODO - this should definitely be a separate function
-			t := time.Now().UnixNano()
-			elapsed := (t - start) / 1000000
-			dict[update.Message.From.ID]++
-			if elapsed <= 5000 && dict[update.Message.From.ID] > 5 {
-				msg.Text = "You are spammer"
-				_, err := bot.Send(msg)
-				if err != nil {
-					return err
-				}
-			} else if elapsed >= 5000 {
-				start = time.Now().UnixNano()
-				dict = map[int]int{}
+			err := handle.FindSpammer(bot, start, &dict, &update, msg)
+			if err != nil {
+				return err
 			}
 			if update.Message.IsCommand() {
 
