@@ -14,7 +14,7 @@ import (
 func InitializeBot() (error, *tgbotapi.BotAPI) {
 	data, err := os.ReadFile("internal/startup/bottoken.txt")
 	if err != nil {
-		return err, nil
+		handle.HandleError(err)
 	}
 
 	token := string(data)
@@ -23,136 +23,36 @@ func InitializeBot() (error, *tgbotapi.BotAPI) {
 	if err != nil {
 		return err, nil
 	}
-	return nil, bot
 
+	return nil, bot
 }
 
 func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
-
 	msg := tgbotapi.NewMessage(newUpd.Message.Chat.ID, "")
 	switch newUpd.Message.Command() {
-	case "getbadwordexceptions":
-		firstPointer, secondPointer, Err, txt := connect.GetAllExceptionsByChat(newUpd.Message.Chat.ID)
-		if Err != nil {
-			handle.HandleError(Err)
-		}
-		msg.Text += txt
-		msg.Text += "\nПары таковы - \n"
-		for i := 0; i < len(*firstPointer); i++ {
-			msg.Text += (*firstPointer)[i]
-			msg.Text += " -> "
-			msg.Text += (*secondPointer)[i]
-			msg.Text += " (username) \n"
-		}
-		if len(*firstPointer) == 0 {
-			msg.Text = "Пар нету!"
-		}
-	case "deletebadwordexception":
-		var s = strings.TrimLeft(newUpd.Message.Text, "/deletebadwordexception")
-		s = strings.TrimSpace(s)
-		var mass = strings.Split(s, "||")
-		fmt.Println(mass[1], " \n", mass[0])
-		if len(mass) != 3 {
-			msg.Text = "Неверный формат. Используйте формат excepted_phrase||excepted_username|| для таких запросов"
-		} else {
-			ErrWithDB, str := connect.DeleteExceptionFromChat(newUpd.Message.Chat.ID, mass[1], mass[0])
-			if ErrWithDB != nil {
-				handle.HandleError(ErrWithDB)
-
-			}
-
-			msg.Text = str
-		}
-	case "addbadwordexception":
-		var s = strings.TrimLeft(newUpd.Message.Text, "/addbadwordexception")
-		s = strings.TrimSpace(s)
-		var mass = strings.Split(s, "||")
-		if len(mass) != 3 {
-			msg.Text = "Неверный формат. Используйте формат excepted_phrase||excepted_username|| для таких запросов"
-		} else {
-			ErrWithDB, str := connect.AddExceptionToChat(newUpd.Message.Chat.ID, mass[1], mass[0])
-			if ErrWithDB != nil {
-				handle.HandleError(ErrWithDB)
-
-			}
-
-			msg.Text = str
-		}
 
 	case "start":
-		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота: \n" +
-			"/start - команда, запускающая бота, выдает список доступных команд \n" +
-			"/help - команда, выдающая список доступных команд\n" +
-			"/guide - команда, возвращающая ссылку на гайд\n" +
-			"/addchat + ID чата - команда, позволяющая добавить чат в базу данных. Нужна, чтобы бот запомнил фильтр запрещенных слов в данном чате.\n" +
-			"/addblacklist + слова - команда, добавляющая запрещенные слова в базу данных. После этого бот будет сообщать, если данное слово было употреблено\n" +
-			"/watchblacklist - команда, позволяющая просмотреть список запрещенных слов для данного чата\n" +
-			"/deletefromblacklist + слова - команда, позволяющая удалить выбранные запрещенные слова для данного чата\n" +
-			"/setsubstitutewith + слово + || + слово - команда, устанавливающая соответствие между двумя словами. В последствии если первое слово будет употреблено в чате бот вернет слово, с которым это соответствие было установлено. Для того чтобы бот работал корректно нужно ввести два слова и разделить их знаком '||'\n" +
-			"/getpairs -  возвращает все слова когда-либо употребленные в чате, с которыми было установленно соответствие предыдущей командой"
+		data, err := os.ReadFile("internal/startup/Desc.txt")
 
-	case "addexceptiontosubstitute":
-		var s = strings.TrimLeft(newUpd.Message.Text, "/addexceptiontosubstitute")
-		s = strings.TrimSpace(s)
-		var mass = strings.Split(s, "||")
-		if len(mass) != 3 {
-			msg.Text = "Неверный формат. Используйте формат excepted_phrase||excepted_username|| для таких запросов"
-		} else {
-			ErrWithDB, str := connect.AddException(newUpd.Message.Chat.ID, mass[0], mass[1])
-			if ErrWithDB != nil {
-				handle.HandleError(ErrWithDB)
-			}
-
-			msg.Text = str
-		}
-	case "getpairs":
-
-		firstPointer, secondPointer, ErrWithHandling, answer := connect.GetAllPairsFromChat(newUpd.Message.Chat.ID)
-
-		msg.Text = answer
-
-		if ErrWithHandling != nil {
-			handle.HandleError(ErrWithHandling)
-		}
-		if firstPointer != nil && len(*firstPointer) != 0 {
-			for i := 0; i < len(*firstPointer); i++ {
-				msg.Text += "\n"
-				msg.Text += (*firstPointer)[i]
-				msg.Text += " -> "
-				msg.Text += (*secondPointer)[i]
-			}
-		} else {
-			msg.Text = "Пар нету"
-		}
-	case "getexcepted":
-		fmt.Println(newUpd.Message.Text)
-
-		firstPointer, secondPointer, ErrWithDB, _ := connect.GetExceptions(newUpd.Message.Chat.ID)
-
-		if ErrWithDB == nil {
-			if len(*firstPointer) == 0 {
-				msg.Text = "В данном чате нет исключений."
-			} else {
-				for i := 0; i < len(*firstPointer); i++ {
-					msg.Text += (*firstPointer)[i]
-					msg.Text += " не действует на ->"
-					msg.Text += (*secondPointer)[i]
-					msg.Text += "\n"
-				}
-			}
-		} else {
-			handle.HandleError(ErrWithDB)
+		if err != nil {
+			handle.HandleError(err)
 		}
 
-	case "deletesubstitute":
+		message := string(data)
+		msg.Text = message
 
-		ErrWithParse, s := connect.DeleteWordFromChat(newUpd.Message.Chat.ID, newUpd.Message.Text)
+	case "help":
+		data, err := os.ReadFile("internal/startup/Desc.txt")
 
-		if ErrWithParse != nil {
-			handle.HandleError(ErrWithParse)
+		if err != nil {
+			handle.HandleError(err)
 		}
 
-		msg.Text = s
+		message := string(data)
+		msg.Text = message
+
+	case "guide":
+		msg.Text = "https://github.com/ice-wiz-test/tgcontextbot/blob/main/guide.md"
 
 	case "addblacklist":
 
@@ -187,6 +87,7 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		if msg.Text == "" {
 			msg.Text = "В этом чате еще нету слов, которые мы отслеживаем."
 		}
+
 	case "deletefromblacklist":
 		var id = newUpd.Message.Chat.ID
 
@@ -198,11 +99,10 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 		if err != nil {
 			handle.HandleError(err)
 			msg.Text = "Что-то пошло не так. Проверьте, что ваш чат добавлен в нашу базу данных."
+
 		} else {
 			msg.Text = "Либо мы успешно добавили слова, либо ваш чат не в базе данных. 50/50"
 		}
-	case "guide":
-		msg.Text = "https://github.com/ice-wiz-test/tgcontextbot/blob/main/guide.md"
 
 	case "setsubstitutewith":
 
@@ -214,23 +114,79 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 		msg.Text = answer
 
-	case "help":
-		msg.Text = "Добро пожаловать! Ознакомьтесь с доступными командами для данного бота: \n" +
-			"/start - команда, запускающая бота, выдает список доступных команд \n" +
-			"/help - команда, выдающая список доступных команд\n" +
-			"/guide - команда, возвращающая ссылку на гайд\n" +
-			"/addchat + ID чата - команда, позволяющая добавить чат в базу данных. Нужна, чтобы бот запомнил фильтр запрещенных слов в данном чате.\n" +
-			"/addblacklist + слова - команда, добавляющая запрещенные слова в базу данных. После этого бот будет сообщать, если данное слово было употреблено\n" +
-			"/watchblacklist - команда, позволяющая просмотреть список запрещенных слов для данного чата\n" +
-			"/deletefromblacklist + слова - команда, позволяющая удалить выбранные запрещенные слова для данного чата\n" +
-			"/setsubstitutewith + слово + || + слово - команда, устанавливающая соответствие между двумя словами. В последствии если первое слово будет употреблено в чате бот вернет слово, с которым это соответствие было установлено. Для того чтобы бот работал корректно нужно ввести два слова и разделить их знаком '||'\n" +
-			"/getpairs -  возвращает все слова когда-либо употребленные в чате, с которыми было установленно соответствие предыдущей командой"
+	case "deletesubstitute":
+
+		ErrWithParse, s := connect.DeleteWordFromChat(newUpd.Message.Chat.ID, newUpd.Message.Text)
+
+		if ErrWithParse != nil {
+			handle.HandleError(ErrWithParse)
+		}
+
+		msg.Text = s
+
+	case "getpairs":
+
+		firstPointer, secondPointer, ErrWithHandling, answer := connect.GetAllPairsFromChat(newUpd.Message.Chat.ID)
+
+		msg.Text = answer
+
+		if ErrWithHandling != nil {
+			handle.HandleError(ErrWithHandling)
+		}
+		if firstPointer != nil && len(*firstPointer) != 0 {
+			for i := 0; i < len(*firstPointer); i++ {
+				msg.Text += "\n"
+				msg.Text += (*firstPointer)[i]
+				msg.Text += " -> "
+				msg.Text += (*secondPointer)[i]
+			}
+		} else {
+			msg.Text = "Пар нету"
+		}
+
+	case "addexceptiontosubstitute":
+		var s = strings.TrimLeft(newUpd.Message.Text, "/addexceptiontosubstitute")
+		s = strings.TrimSpace(s)
+		var mass = strings.Split(s, "||")
+		if len(mass) != 3 {
+			msg.Text = "Неверный формат. Используйте формат excepted_phrase||excepted_username|| для таких запросов"
+		} else {
+			ErrWithDB, str := connect.AddException(newUpd.Message.Chat.ID, mass[0], mass[1])
+
+			if ErrWithDB != nil {
+				handle.HandleError(ErrWithDB)
+			}
+
+			msg.Text = str
+		}
+
+	case "getexcepted":
+		fmt.Println(newUpd.Message.Text)
+
+		firstPointer, secondPointer, ErrWithDB, _ := connect.GetExceptions(newUpd.Message.Chat.ID)
+
+		if ErrWithDB == nil {
+			if len(*firstPointer) == 0 {
+				msg.Text = "В данном чате нет исключений."
+			} else {
+				for i := 0; i < len(*firstPointer); i++ {
+					msg.Text += (*firstPointer)[i]
+					msg.Text += " не действует на ->"
+					msg.Text += (*secondPointer)[i]
+					msg.Text += "\n"
+				}
+			}
+		} else {
+			handle.HandleError(ErrWithDB)
+		}
 
 	case "deleteexception":
 
 		fmt.Println(newUpd.Message.Text)
+
 		var s = strings.TrimLeft(newUpd.Message.Text, "/deleteexception")
 		s = strings.TrimSpace(s)
+
 		var mass = strings.Split(s, "||")
 
 		if len(mass) != 3 {
@@ -244,9 +200,64 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			msg.Text = str
 		}
 
+	case "addbadwordexception":
+		var s = strings.TrimLeft(newUpd.Message.Text, "/addbadwordexception")
+		s = strings.TrimSpace(s)
+		var mass = strings.Split(s, "||")
+		if len(mass) != 3 {
+			msg.Text = "Неверный формат. Используйте формат excepted_phrase||excepted_username|| для таких запросов"
+		} else {
+			ErrWithDB, str := connect.AddExceptionToChat(newUpd.Message.Chat.ID, mass[1], mass[0])
+
+			if ErrWithDB != nil {
+				handle.HandleError(ErrWithDB)
+
+			}
+
+			msg.Text = str
+		}
+
+	case "getbadwordexceptions":
+		firstPointer, secondPointer, Err, txt := connect.GetAllExceptionsByChat(newUpd.Message.Chat.ID)
+		if Err != nil {
+			handle.HandleError(Err)
+		}
+		msg.Text += txt
+		msg.Text += "\nПары таковы - \n"
+
+		for i := 0; i < len(*firstPointer); i++ {
+			msg.Text += (*firstPointer)[i]
+			msg.Text += " -> "
+			msg.Text += (*secondPointer)[i]
+			msg.Text += " (username) \n"
+		}
+
+		if len(*firstPointer) == 0 {
+			msg.Text = "Пар нету!"
+		}
+
+	case "deletebadwordexception":
+		var s = strings.TrimLeft(newUpd.Message.Text, "/deletebadwordexception")
+		s = strings.TrimSpace(s)
+		var mass = strings.Split(s, "||")
+		fmt.Println(mass[1], " \n", mass[0])
+		if len(mass) != 3 {
+			msg.Text = "Неверный формат. Используйте формат excepted_phrase||excepted_username|| для таких запросов"
+		} else {
+			ErrWithDB, str := connect.DeleteExceptionFromChat(newUpd.Message.Chat.ID, mass[1], mass[0])
+
+			if ErrWithDB != nil {
+				handle.HandleError(ErrWithDB)
+
+			}
+
+			msg.Text = str
+		}
+
 	default:
 		msg.Text = "Я не знаю такой команды, простите"
 	}
+
 	if msg.Text == "" {
 		msg.Text = "Временный костыль для тестирования"
 	}
@@ -260,7 +271,6 @@ func BotCommandHandle(newUpd tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 }
 
 func ServeBot(bot *tgbotapi.BotAPI) error {
-
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
@@ -269,6 +279,7 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 	updates := bot.GetUpdatesChan(u)
 	start := time.Now().UnixNano()
 	dict := map[int]int{}
+
 	for update := range updates {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 		if update.Message != nil {
