@@ -10,6 +10,7 @@ func CheckProf(badWords *[]string, find string, exceptedWords *[]string) bool {
 			if (*badWords)[i] == (*exceptedWords)[j] {
 				continue
 			}
+
 			if strings.Contains(find, (*badWords)[i]) {
 				return true
 			}

@@ -39,15 +39,18 @@ func AddWordToBlacklist(idd int64, badWord string) error {
 	for newRows.Next() {
 		var txt string
 		errWithParse := newRows.Scan(&txt)
+
 		if errWithParse != nil {
 			handle.HandleError(errWithParse)
 		}
+
 		badWordByChat = append(badWordByChat, txt)
 	}
 
 	var flag = false
 	var i = 0
 	var j = 0
+
 	for i = 0; i < len(allBadWords); i++ {
 		flag = false
 		for j = 0; j < len(badWordByChat); j++ {
@@ -145,6 +148,7 @@ func DeleteWordFromBlacklist(idd int64, badWord string) error {
 	for newRows.Next() {
 		var txt string
 		errWithParse := newRows.Scan(&txt)
+
 		if errWithParse != nil {
 			return errWithParse
 		}

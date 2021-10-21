@@ -284,9 +284,11 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 		if update.Message != nil {
 			err := handle.FindSpammer(bot, start, &dict, update.Message.From.ID, msg)
+
 			if err != nil {
 				handle.HandleError(err)
 			}
+
 			if update.Message.IsCommand() {
 
 				err := BotCommandHandle(update, bot)
@@ -294,6 +296,7 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 				if err != nil {
 					handle.HandleError(err)
 				}
+
 			} else {
 
 				allWords, Err := connect.GetAllBadWordsByChat(update.Message.Chat.ID)
@@ -301,10 +304,10 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 				if Err != nil {
 					handle.HandleError(Err)
 				} else {
-					if allWords == nil {
-					} else {
+					if allWords != nil {
 						stringPointer, err, _ := connect.GetExceptionsByUsername(update.Message.Chat.ID, update.Message.From.UserName)
 						ptr, Err := connect.GetAllBadWordsByChat(update.Message.Chat.ID)
+
 						if err == nil && Err == nil {
 							if handle.CheckProf(ptr, update.Message.Text, stringPointer) {
 								msg.Text = "Вы сказали запрещенное в данном чате слово."
@@ -342,9 +345,7 @@ func ServeBot(bot *tgbotapi.BotAPI) error {
 					}
 				}
 			}
-
 		}
 	}
-
 	return nil
 }
